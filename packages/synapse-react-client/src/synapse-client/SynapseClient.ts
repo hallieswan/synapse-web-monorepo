@@ -6,6 +6,7 @@ import {
   ACCESS_APPROVAL,
   ACCESS_APPROVAL_BY_ID,
   ACCESS_REQUEST_SUBMISSION_SEARCH,
+  ACCESS_REQUIREMENT,
   ACCESS_REQUIREMENT_ACL,
   ACCESS_REQUIREMENT_BY_ID,
   ACCESS_REQUIREMENT_DATA_ACCESS_REQUEST_FOR_UPDATE,
@@ -2993,6 +2994,50 @@ export const getAccessRequirementById = <T extends AccessRequirement>(
 ): Promise<T> => {
   return doGet<T>(
     ACCESS_REQUIREMENT_BY_ID(id),
+    accessToken,
+    BackendDestinationEnum.REPO_ENDPOINT,
+  )
+}
+
+/**
+ * Add an Access Requirement to an Entity, or Team. This service may only be
+ * used by the Synapse Access and Compliance Team.
+ *
+ * See https://rest-docs.synapse.org/rest/POST/accessRequirement.html
+ *
+ * @param accessToken token of user
+ * @param accessRequirement access requirement to create
+ * @returns created access requirement
+ */
+export const createAccessRequirement = <T extends AccessRequirement>(
+  accessToken: string | undefined,
+  accessRequirement: Partial<T>,
+): Promise<T> => {
+  return doPost<T>(
+    ACCESS_REQUIREMENT,
+    accessRequirement,
+    accessToken,
+    BackendDestinationEnum.REPO_ENDPOINT,
+  )
+}
+
+/**
+ * Modify an existing Access Requirement. This service may only be used by the
+ * Synapse Access and Compliance Team.
+ *
+ * See https://rest-docs.synapse.org/rest/PUT/accessRequirement/requirementId.html
+ *
+ * @param accessToken token of user
+ * @param accessRequirement access requirement to update
+ * @returns updated access requirement
+ */
+export const updateAccessRequirement = <T extends AccessRequirement>(
+  accessToken: string | undefined,
+  accessRequirement: T,
+): Promise<T> => {
+  return doPut<T>(
+    `${ACCESS_REQUIREMENT}/${accessRequirement.id}`,
+    accessRequirement,
     accessToken,
     BackendDestinationEnum.REPO_ENDPOINT,
   )

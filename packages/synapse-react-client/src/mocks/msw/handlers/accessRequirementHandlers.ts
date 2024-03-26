@@ -1,5 +1,6 @@
 import { rest } from 'msw'
 import {
+  ACCESS_REQUIREMENT,
   ACCESS_REQUIREMENT_BY_ID,
   ACCESS_REQUIREMENT_STATUS,
   ACCESS_REQUIREMENT_WIKI_PAGE_KEY,
@@ -71,6 +72,30 @@ export const getAccessRequirementHandlers = (backendOrigin: string) => [
     },
   ),
 ]
+
+export function createAccessRequirement(backendOrigin: string) {
+  return rest.post(
+    `${backendOrigin}${ACCESS_REQUIREMENT}`,
+    async (req, res, ctx) => {
+      // TODO - confirm this status code
+      return res(
+        ctx.status(201),
+        ctx.json({ ...req, id: 1000, etag: 'mock-etag' }),
+      )
+    },
+  )
+}
+
+export function updateAccessRequirement(backendOrigin: string) {
+  return rest.put(
+    `${backendOrigin}${ACCESS_REQUIREMENT_BY_ID(':id')}`,
+    async (req, res, ctx) => {
+      // TODO - confirm this status code
+      return res(ctx.status(200), ctx.json(req))
+    },
+  )
+}
+
 export const getAccessRequirementEntityBindingHandlers = (
   backendOrigin: string,
   entityId = ':entityId',
@@ -191,6 +216,8 @@ export function getCreateAccessApprovalHandler(backendOrigin: string) {
 export function getAllAccessRequirementHandlers(backendOrigin: string) {
   return [
     ...getAccessRequirementHandlers(backendOrigin),
+    createAccessRequirement(backendOrigin),
+    updateAccessRequirement(backendOrigin),
     ...getAccessRequirementEntityBindingHandlers(backendOrigin),
     getAccessRequirementsBoundToTeamHandler(backendOrigin),
     ...getAccessRequirementStatusHandlers(backendOrigin),

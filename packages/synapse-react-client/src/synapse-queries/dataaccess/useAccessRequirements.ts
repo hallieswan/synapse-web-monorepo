@@ -11,8 +11,10 @@ import {
   UseQueryOptions,
 } from '@tanstack/react-query'
 import SynapseClient, {
+  createAccessRequirement,
   createAccessRequirementAcl,
   deleteAccessRequirementAcl,
+  updateAccessRequirement,
   updateAccessRequirementAcl,
 } from '../../synapse-client'
 import { SynapseClientError, useSynapseContext } from '../../utils'
@@ -94,6 +96,63 @@ export function useGetAccessRequirementWikiPageKey(
         accessToken,
         accessRequirementId,
       ),
+  })
+}
+
+export function useCreateAccessRequirement(
+  options?: UseMutationOptions<
+    AccessRequirement,
+    SynapseClientError,
+    Partial<AccessRequirement>
+  >,
+) {
+  const queryClient = useQueryClient()
+  const { accessToken, keyFactory } = useSynapseContext()
+
+  return useMutation<
+    AccessRequirement,
+    SynapseClientError,
+    Partial<AccessRequirement>
+  >({
+    ...options,
+    mutationFn: ar => createAccessRequirement(accessToken, ar),
+    onSuccess: async (newAr, ar, ctx) => {
+      const accessRequirementQueryKey = keyFactory.getAccessRequirementQueryKey(
+        newAr.id.toString(),
+      )
+      queryClient.setQueryData(accessRequirementQueryKey, newAr)
+
+      if (options?.onSuccess) {
+        return await options.onSuccess(newAr, ar, ctx)
+      }
+      return
+    },
+  })
+}
+
+export function useUpdateAccessRequirement(
+  options?: UseMutationOptions<
+    AccessRequirement,
+    SynapseClientError,
+    AccessRequirement
+  >,
+) {
+  const queryClient = useQueryClient()
+  const { accessToken, keyFactory } = useSynapseContext()
+  return useMutation<AccessRequirement, SynapseClientError, AccessRequirement>({
+    ...options,
+    mutationFn: ar => updateAccessRequirement(accessToken, ar),
+    onSuccess: async (newAr, ar, ctx) => {
+      const accessRequirementQueryKey = keyFactory.getAccessRequirementQueryKey(
+        newAr.id.toString(),
+      )
+      queryClient.setQueryData(accessRequirementQueryKey, newAr)
+
+      if (options?.onSuccess) {
+        return await options.onSuccess(newAr, ar, ctx)
+      }
+      return
+    },
   })
 }
 

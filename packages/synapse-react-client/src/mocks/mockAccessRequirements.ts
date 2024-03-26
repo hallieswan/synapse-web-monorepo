@@ -25,6 +25,7 @@ import {
   mockToUAccessRequirementWikiPage,
 } from './mockWiki'
 import { mockDucTemplateFileHandle } from './mock_file_handle'
+import { MOCK_TEAM_ID } from './team/mockTeam'
 
 const MOCK_PROJECT_ID = mockProjectData.id
 
@@ -149,6 +150,19 @@ export const mockACTAccessRequirementWithWikiPageKey: WikiPageKey = {
   ownerObjectType: ObjectType.ACCESS_REQUIREMENT,
 }
 
+export const mockTeamManagedACTAccessRequirement: ManagedACTAccessRequirement =
+  {
+    ...mockManagedACTAccessRequirement,
+    id: 8,
+    subjectIds: [
+      {
+        id: MOCK_TEAM_ID.toString(),
+        type: RestrictableObjectType.TEAM,
+      },
+    ],
+    accessType: ACCESS_TYPE.PARTICIPATE,
+  }
+
 export const mockSearchResults: AccessRequirementSearchResponse = {
   results: [
     {
@@ -202,6 +216,7 @@ export const mockAccessRequirements: AccessRequirement[] = [
   mockLockAccessRequirement,
   mockToUAccessRequirementWithWiki,
   mockACTAccessRequirementWithWiki,
+  mockTeamManagedACTAccessRequirement,
 ]
 
 export const mockAccessRequirementWikiPageKeys: WikiPageKey[] = [
