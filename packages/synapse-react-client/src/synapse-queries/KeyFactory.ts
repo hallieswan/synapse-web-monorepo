@@ -14,6 +14,7 @@ import {
   FileHandleAssociation,
   GetEvaluationParameters,
   GetProjectsParameters,
+  ObjectType,
   PrincipalAliasRequest,
   QueryBundleRequest,
   ReferenceList,
@@ -183,6 +184,7 @@ const downloadListQueryKeys = {
 }
 
 const ACCESS_REQUIREMENT_QUERY_KEY = 'accessRequirement'
+const WIKI_KEY = 'wiki'
 
 /**
  * Returns a react-query Query Key.
@@ -352,6 +354,15 @@ export class KeyFactory {
         infinite,
       ),
     )
+  }
+
+  // TODO - evaluate this key
+  public getWikiPageKey(
+    ownerId: string | undefined,
+    wikiId: string | undefined = '',
+    objectType: ObjectType = ObjectType.ENTITY,
+  ) {
+    return this.getKey(WIKI_KEY, ownerId, wikiId, objectType)
   }
 
   public getFullTableQueryResultQueryKey(

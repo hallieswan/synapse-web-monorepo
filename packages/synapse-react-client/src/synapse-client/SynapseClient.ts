@@ -78,6 +78,7 @@ import {
   USER_PROFILE,
   USER_PROFILE_ID,
   VERIFICATION_SUBMISSION,
+  WIKI_PAGE,
 } from '../utils/APIConstants'
 import { dispatchDownloadListChangeEvent } from '../utils/functions/dispatchDownloadListChangeEvent'
 import { BackendDestinationEnum, getEndpoint } from '../utils/functions'
@@ -1168,13 +1169,6 @@ export const getEntityBundleV2 = <T extends EntityBundleRequest>(
 }
 
 /**
- * Get a corresponding string value of ObjectType:
- **/
-function getObjectTypeToString(key: ObjectType) {
-  return ObjectType[key]
-}
-
-/**
  * Get Wiki page contents, call is of the form:
  * https://rest-docs.synapse.org/rest/GET/entity/ownerId/wiki.html
  */
@@ -1184,9 +1178,7 @@ export const getEntityWiki = (
   wikiId: string | undefined = '',
   objectType: ObjectType = ObjectType.ENTITY,
 ) => {
-  const objectTypeString = getObjectTypeToString(objectType)
-
-  const url = `/repo/v1/${objectTypeString?.toLocaleLowerCase()}/${ownerId}/wiki/${wikiId}`
+  const url = `${WIKI_PAGE(objectType)}/${ownerId}/wiki/${wikiId}`
   return doGet<WikiPage>(url, accessToken, BackendDestinationEnum.REPO_ENDPOINT)
 }
 
@@ -1693,8 +1685,7 @@ export const getWikiAttachmentsFromEntity = (
   wikiId: string | number,
   objectType: ObjectType = ObjectType.ENTITY,
 ): Promise<FileHandleResults> => {
-  const objectTypeString = getObjectTypeToString(objectType)
-  const url = `/repo/v1/${objectTypeString.toLocaleLowerCase()}/${id}/wiki2/${wikiId}/attachmenthandles`
+  const url = `${WIKI_PAGE(objectType)}/${id}/wiki2/${wikiId}/attachmenthandles`
   return doGet(url, accessToken, BackendDestinationEnum.REPO_ENDPOINT)
 }
 export const getWikiAttachmentsFromEvaluation = (
@@ -1713,8 +1704,9 @@ export const getPresignedUrlForWikiAttachment = (
   fileName: string,
   objectType: ObjectType = ObjectType.ENTITY,
 ): Promise<string> => {
-  const objectTypeString = getObjectTypeToString(objectType)
-  const url = `/repo/v1/${objectTypeString.toLocaleLowerCase()}/${id}/wiki2/${wikiId}/attachment?fileName=${fileName}&redirect=false`
+  const url = `${WIKI_PAGE(
+    objectType,
+  )}/${id}/wiki2/${wikiId}/attachment?fileName=${fileName}&redirect=false`
   return doGet(url, accessToken, BackendDestinationEnum.REPO_ENDPOINT)
 }
 

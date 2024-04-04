@@ -26,6 +26,7 @@ import {
 } from './mockWiki'
 import { mockDucTemplateFileHandle } from './mock_file_handle'
 import { MOCK_TEAM_ID } from './team/mockTeam'
+import { DAY_IN_MS } from '../utils/SynapseConstants'
 
 const MOCK_PROJECT_ID = mockProjectData.id
 
@@ -57,7 +58,7 @@ export const mockManagedACTAccessRequirement: ManagedACTAccessRequirement = {
   isIDUPublic: true,
   isIDURequired: true,
   ducTemplateFileHandleId: mockDucTemplateFileHandle.id,
-  expirationPeriod: 1000 * 60 * 60 * 24, // 1 day
+  expirationPeriod: DAY_IN_MS, // 1 day
   isIRBApprovalRequired: true,
   isValidatedProfileRequired: true,
   isTwoFaRequired: true,

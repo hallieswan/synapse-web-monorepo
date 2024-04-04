@@ -2,6 +2,7 @@
  * Separating API endpoints into their own constants file
  */
 
+import { ObjectType } from '@sage-bionetworks/synapse-types'
 import { getEndpoint, BackendDestinationEnum } from './functions/getEndpoint'
 
 export const BACKEND_ENDPOINT = `${getEndpoint(
@@ -206,3 +207,7 @@ export const FILE_HANDLE_BATCH = `${FILE_HANDLE}/batch`
 export const PROJECTS = `${REPO}/projects`
 export const ENTITY_ACTIONS_REQUIRED = (entityId: string) =>
   `${REPO}/entity/${entityId}/actions/download`
+
+export const WIKI_PAGE = (objectType: ObjectType) => {
+  return `${REPO}/${ObjectType[objectType].toLocaleLowerCase()}`
+}
