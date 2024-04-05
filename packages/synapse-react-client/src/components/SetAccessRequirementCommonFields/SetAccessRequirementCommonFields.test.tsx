@@ -21,6 +21,8 @@ import {
   MOCK_FILE_NAME,
 } from '../../mocks/entity/mockFileEntity'
 import {
+  MOCK_ETAG,
+  MOCK_NEWLY_CREATED_AR_ID,
   mockACTAccessRequirement,
   mockLockAccessRequirement,
   mockManagedACTAccessRequirement,
@@ -118,9 +120,6 @@ describe('SetAccessRequirementCommonFields', () => {
     ref.current?.save()
 
     await waitFor(() => {
-      expect(onSaveComplete).toHaveBeenCalledTimes(1)
-      expect(onSaveComplete).toHaveBeenLastCalledWith(true)
-
       const managedAr: Pick<
         ManagedACTAccessRequirement,
         'concreteType' | 'name' | 'subjectIds' | 'accessType'
@@ -130,11 +129,19 @@ describe('SetAccessRequirementCommonFields', () => {
         subjectIds: [entitySubject],
         accessType: ACCESS_TYPE.DOWNLOAD,
       }
+
       expect(createAccessRequirementSpy).toHaveBeenCalledWith(
         MOCK_ACCESS_TOKEN,
         managedAr,
       )
       expect(updateAccessRequirementSpy).not.toHaveBeenCalled()
+
+      expect(onSaveComplete).toHaveBeenCalledTimes(1)
+      expect(onSaveComplete).toHaveBeenLastCalledWith({
+        ...managedAr,
+        id: MOCK_NEWLY_CREATED_AR_ID,
+        etag: MOCK_ETAG,
+      })
     })
   })
 
@@ -164,9 +171,6 @@ describe('SetAccessRequirementCommonFields', () => {
     ref.current?.save()
 
     await waitFor(() => {
-      expect(onSaveComplete).toHaveBeenCalledTimes(1)
-      expect(onSaveComplete).toHaveBeenLastCalledWith(true)
-
       const selfSignAr: Pick<
         SelfSignAccessRequirement,
         'concreteType' | 'name' | 'subjectIds' | 'accessType'
@@ -176,11 +180,19 @@ describe('SetAccessRequirementCommonFields', () => {
         subjectIds: [entitySubject],
         accessType: ACCESS_TYPE.DOWNLOAD,
       }
+
       expect(createAccessRequirementSpy).toHaveBeenCalledWith(
         MOCK_ACCESS_TOKEN,
         selfSignAr,
       )
       expect(updateAccessRequirementSpy).not.toHaveBeenCalled()
+
+      expect(onSaveComplete).toHaveBeenCalledTimes(1)
+      expect(onSaveComplete).toHaveBeenLastCalledWith({
+        ...selfSignAr,
+        id: MOCK_NEWLY_CREATED_AR_ID,
+        etag: MOCK_ETAG,
+      })
     })
   })
 
@@ -211,9 +223,6 @@ describe('SetAccessRequirementCommonFields', () => {
     ref.current?.save()
 
     await waitFor(() => {
-      expect(onSaveComplete).toHaveBeenCalledTimes(1)
-      expect(onSaveComplete).toHaveBeenLastCalledWith(true)
-
       const managedAr: Pick<
         ManagedACTAccessRequirement,
         'concreteType' | 'name' | 'subjectIds' | 'accessType'
@@ -223,11 +232,19 @@ describe('SetAccessRequirementCommonFields', () => {
         subjectIds: [teamSubject],
         accessType: ACCESS_TYPE.PARTICIPATE,
       }
+
       expect(createAccessRequirementSpy).toHaveBeenCalledWith(
         MOCK_ACCESS_TOKEN,
         managedAr,
       )
       expect(updateAccessRequirementSpy).not.toHaveBeenCalled()
+
+      expect(onSaveComplete).toHaveBeenCalledTimes(1)
+      expect(onSaveComplete).toHaveBeenLastCalledWith({
+        ...managedAr,
+        id: MOCK_NEWLY_CREATED_AR_ID,
+        etag: MOCK_ETAG,
+      })
     })
   })
 
@@ -260,12 +277,16 @@ describe('SetAccessRequirementCommonFields', () => {
     ref.current?.save()
 
     await waitFor(() => {
+      const updatedAr: ManagedACTAccessRequirement = {
+        ...mockTeamManagedACTAccessRequirement,
+        name: updatedName,
+      }
       expect(onSaveComplete).toHaveBeenCalledTimes(1)
-      expect(onSaveComplete).toHaveBeenLastCalledWith(true)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(updatedAr)
       expect(createAccessRequirementSpy).not.toHaveBeenCalled()
       expect(updateAccessRequirementSpy).toHaveBeenCalledWith(
         MOCK_ACCESS_TOKEN,
-        { ...mockTeamManagedACTAccessRequirement, name: updatedName },
+        updatedAr,
       )
     })
   })
@@ -305,12 +326,13 @@ describe('SetAccessRequirementCommonFields', () => {
       ref.current?.save()
 
       await waitFor(() => {
+        const updatedAr = { ...ar, name: updatedName }
         expect(onSaveComplete).toHaveBeenCalledTimes(1)
-        expect(onSaveComplete).toHaveBeenLastCalledWith(true)
+        expect(onSaveComplete).toHaveBeenLastCalledWith(updatedAr)
         expect(createAccessRequirementSpy).not.toHaveBeenCalled()
         expect(updateAccessRequirementSpy).toHaveBeenCalledWith(
           MOCK_ACCESS_TOKEN,
-          { ...ar, name: updatedName },
+          updatedAr,
         )
       })
     })
@@ -333,7 +355,7 @@ describe('SetAccessRequirementCommonFields', () => {
 
     await waitFor(() => {
       expect(onSaveComplete).toHaveBeenCalledTimes(1)
-      expect(onSaveComplete).toHaveBeenLastCalledWith(false)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(null)
       expect(createAccessRequirementSpy).not.toHaveBeenCalled()
       expect(updateAccessRequirementSpy).not.toHaveBeenCalled()
     })
@@ -365,7 +387,7 @@ describe('SetAccessRequirementCommonFields', () => {
 
     await waitFor(() => {
       expect(onSaveComplete).toHaveBeenCalledTimes(1)
-      expect(onSaveComplete).toHaveBeenLastCalledWith(false)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(null)
       expect(createAccessRequirementSpy).not.toHaveBeenCalled()
       expect(updateAccessRequirementSpy).not.toHaveBeenCalled()
     })
@@ -395,7 +417,7 @@ describe('SetAccessRequirementCommonFields', () => {
 
     await waitFor(() => {
       expect(onSaveComplete).toHaveBeenCalledTimes(1)
-      expect(onSaveComplete).toHaveBeenLastCalledWith(false)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(null)
       expect(createAccessRequirementSpy).not.toHaveBeenCalled()
       expect(updateAccessRequirementSpy).not.toHaveBeenCalled()
     })

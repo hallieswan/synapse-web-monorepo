@@ -28,6 +28,8 @@ import { mockDucTemplateFileHandle } from './mock_file_handle'
 import { MOCK_TEAM_ID } from './team/mockTeam'
 import { DAY_IN_MS } from '../utils/SynapseConstants'
 
+export const MOCK_NEWLY_CREATED_AR_ID = 1000
+export const MOCK_ETAG = 'mock-etag'
 const MOCK_PROJECT_ID = mockProjectData.id
 
 const defaultAccessRequirement = {

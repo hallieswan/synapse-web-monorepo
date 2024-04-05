@@ -57,7 +57,10 @@ export type SetManagedAccessRequirementFieldsHandle = {
 export type SetManagedAccessRequirementFieldsProps = {
   accessRequirement: ManagedACTAccessRequirement
   /* Called when AR has been saved or an error has been returned */
-  onSaveComplete: (saveSuccessful: boolean) => void
+  onSaveComplete: (
+    /* null when an error has been returned */
+    updatedAr: ManagedACTAccessRequirement | null,
+  ) => void
 }
 
 export const SetManagedAccessRequirementFields = React.forwardRef(
@@ -67,6 +70,9 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
   ) {
     const { accessRequirement, onSaveComplete } = props
     const [error, setError] = useState<string | null>(null)
+    const [expirationPeriodError, setExpirationPeriodError] = useState<
+      string | null
+    >(null)
 
     const [updatedAr, setUpdatedAr] =
       useState<ManagedACTAccessRequirement>(accessRequirement)
@@ -113,14 +119,14 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
     const {
       mutate: updateAccessRequirement,
       isPending: isUpdatingAccessRequirement,
-    } = useUpdateAccessRequirement({
-      onSuccess: () => {
+    } = useUpdateAccessRequirement<ManagedACTAccessRequirement>({
+      onSuccess: updatedAr => {
         setError(null)
-        onSaveComplete(true)
+        onSaveComplete(updatedAr)
       },
       onError: error => {
         setError(error.reason)
-        onSaveComplete(false)
+        onSaveComplete(null)
       },
     })
 
@@ -129,13 +135,11 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
       () => {
         return {
           save() {
-            setError(null)
-
             const maybeExpirationPeriod =
               returnValidExpirationPeriodOrErrorMessage(expirationPeriodDays)
             if (typeof maybeExpirationPeriod === 'string') {
-              setError(maybeExpirationPeriod)
-              onSaveComplete(false)
+              setExpirationPeriodError(maybeExpirationPeriod)
+              onSaveComplete(null)
             } else {
               updateAccessRequirement({
                 ...updatedAr,
@@ -267,8 +271,16 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
                 value={expirationPeriodDays}
                 sx={{ mt: 1 }}
                 fullWidth
-                onChange={event => setExpirationPeriodDays(event.target.value)}
+                onChange={event => {
+                  setExpirationPeriodError(null)
+                  setExpirationPeriodDays(event.target.value)
+                }}
               />
+              {expirationPeriodError && (
+                <Alert severity="error" sx={{ marginTop: 2 }}>
+                  {expirationPeriodError}
+                </Alert>
+              )}
               <Box mt={1}>
                 <Checkbox
                   label="Intended Data Use statement is required."

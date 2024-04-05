@@ -1,10 +1,20 @@
+import {
+  AccessRequirement,
+  MANAGED_ACT_ACCESS_REQUIREMENT_CONCRETE_TYPE_VALUE,
+  ManagedACTAccessRequirement,
+} from '@sage-bionetworks/synapse-types'
 import React, { useMemo, useRef, useState } from 'react'
+import { AccessRequirementAclEditor } from '..'
+import { AccessRequirementAclEditorHandle } from '../AccessRequirementAclEditor/AccessRequirementAclEditor'
 import ConfirmationDialog from '../ConfirmationDialog'
 import {
   SetAccessRequirementCommonFields,
   SetAccessRequirementCommonFieldsHandle,
   SetAccessRequirementCommonFieldsProps,
 } from '../SetAccessRequirementCommonFields'
+import SetManagedAccessRequirementFields, {
+  SetManagedAccessRequirementFieldsHandle,
+} from '../SetManagedAccessRequirementFields'
 import {
   CreateAccessRequirementWizardStep,
   getModalTitle,
@@ -29,56 +39,95 @@ export const CreateAccessRequirementWizard: React.FunctionComponent<
     'SET_AR_COMMON_FIELDS',
   )
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [accessRequirement, setAccessRequirement] = useState<
+    AccessRequirement | undefined
+  >(undefined)
 
   const setArCommonFieldsRef =
     useRef<SetAccessRequirementCommonFieldsHandle>(null)
+  const setManagedArFieldsRef =
+    useRef<SetManagedAccessRequirementFieldsHandle>(null)
+  const editArAclRef = useRef<AccessRequirementAclEditorHandle>(null)
 
   const isEditing = 'accessRequirementId' in props
-
-  const onSaveComplete = (
-    saveSuccessful: boolean,
-    step: CreateAccessRequirementWizardStep,
-  ) => {
-    if (saveSuccessful) {
-      setStep(step)
-    }
-    setIsLoading(false)
-  }
 
   const stepContent = useMemo(() => {
     switch (step) {
       case 'SET_AR_COMMON_FIELDS':
         return (
-          <>
-            {isEditing ? (
-              <SetAccessRequirementCommonFields
-                ref={setArCommonFieldsRef}
-                onSaveComplete={saveSuccessful =>
-                  onSaveComplete(saveSuccessful, 'SET_ACL_PERMISSIONS')
-                }
-                accessRequirementId={props.accessRequirementId}
-              />
-            ) : (
-              <SetAccessRequirementCommonFields
-                ref={setArCommonFieldsRef}
-                onSaveComplete={saveSuccessful =>
-                  onSaveComplete(saveSuccessful, 'SET_ACL_PERMISSIONS')
-                }
-                subject={props.subject}
-              />
-            )}
-          </>
+          <SetAccessRequirementCommonFields
+            ref={setArCommonFieldsRef}
+            onSaveComplete={accessRequirement => {
+              if (accessRequirement) {
+                setAccessRequirement(accessRequirement)
+                const nextStep: CreateAccessRequirementWizardStep =
+                  accessRequirement.concreteType ===
+                  MANAGED_ACT_ACCESS_REQUIREMENT_CONCRETE_TYPE_VALUE
+                    ? 'SET_MANAGED_AR_FIELDS'
+                    : 'SET_BASIC_AR_FIELDS'
+                setStep(nextStep)
+              }
+              setIsLoading(false)
+            }}
+            subject={props.subject}
+            accessRequirementId={props.accessRequirementId}
+          />
+        )
+      case 'SET_MANAGED_AR_FIELDS':
+        return (
+          <SetManagedAccessRequirementFields
+            ref={setManagedArFieldsRef}
+            accessRequirement={
+              accessRequirement! as ManagedACTAccessRequirement
+            }
+            onSaveComplete={accessRequirement => {
+              if (accessRequirement) {
+                setAccessRequirement(accessRequirement)
+                setStep('SET_MANAGED_AR_ACL_PERMISSIONS')
+              }
+              setIsLoading(false)
+            }}
+          />
+        )
+      case 'SET_MANAGED_AR_ACL_PERMISSIONS':
+        return (
+          <AccessRequirementAclEditor
+            ref={editArAclRef}
+            accessRequirementId={accessRequirement!.id.toString()}
+            onSaveComplete={saveSuccessful => {
+              if (saveSuccessful) {
+                onComplete()
+              }
+              setIsLoading(false)
+            }}
+          />
         )
       default:
         return <>TODO</>
     }
-  }, [step, props.subject, props.accessRequirementId, isEditing])
+  }, [
+    step,
+    props.subject,
+    props.accessRequirementId,
+    accessRequirement,
+    onComplete,
+  ])
 
   const onClickPrimary = () => {
     setIsLoading(true)
-    if (step === 'SET_AR_COMMON_FIELDS') {
-      setArCommonFieldsRef?.current?.save()
-      return
+    switch (step) {
+      case 'SET_AR_COMMON_FIELDS':
+        setArCommonFieldsRef?.current?.save()
+        return
+      case 'SET_MANAGED_AR_FIELDS':
+        setManagedArFieldsRef?.current?.save()
+        return
+      case 'SET_MANAGED_AR_ACL_PERMISSIONS':
+        editArAclRef?.current?.save()
+        return
+      case 'SET_BASIC_AR_FIELDS':
+        // TODO
+        console.log('todo')
     }
     return onComplete
   }

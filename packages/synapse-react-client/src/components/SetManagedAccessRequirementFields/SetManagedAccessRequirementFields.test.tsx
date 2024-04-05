@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { MarkdownSynapse, SynapseClient } from '../..'
@@ -17,6 +17,10 @@ import {
   SetManagedAccessRequirementFieldsProps,
   returnValidExpirationPeriodOrErrorMessage,
 } from './SetManagedAccessRequirementFields'
+import { ManagedACTAccessRequirement } from '@sage-bionetworks/synapse-types'
+
+const NEGATIVE_EXPIRATION_PERIOD_ERROR =
+  'Please enter a valid expiration period (in days): If expiration period is set, then it must be greater than 0.'
 
 const MARKDOWN_SYNAPSE_TEST_ID = 'MarkdownSynapseContent'
 jest.mock('../Markdown/MarkdownSynapse', () => ({
@@ -192,16 +196,17 @@ describe('SetManagedAccessrequirementFields', () => {
     ref.current?.save()
 
     await waitFor(() => {
+      const updatedAr: ManagedACTAccessRequirement = {
+        ...mockManagedACTAccessRequirement,
+        isCertifiedUserRequired: false,
+        isValidatedProfileRequired: false,
+        isTwoFaRequired: false,
+      }
       expect(onSaveComplete).toHaveBeenCalledTimes(1)
-      expect(onSaveComplete).toHaveBeenLastCalledWith(true)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(updatedAr)
       expect(updateAccessRequirementSpy).toHaveBeenLastCalledWith(
         MOCK_ACCESS_TOKEN,
-        {
-          ...mockManagedACTAccessRequirement,
-          isCertifiedUserRequired: false,
-          isValidatedProfileRequired: false,
-          isTwoFaRequired: false,
-        },
+        updatedAr,
       )
     })
   })
@@ -227,33 +232,160 @@ describe('SetManagedAccessrequirementFields', () => {
     ref.current?.save()
 
     await waitFor(() => {
+      const updatedAr: ManagedACTAccessRequirement = {
+        ...mockManagedACTAccessRequirement,
+        isDUCRequired: false,
+        isIRBApprovalRequired: false,
+        areOtherAttachmentsRequired: false,
+      }
       expect(onSaveComplete).toHaveBeenCalledTimes(1)
-      expect(onSaveComplete).toHaveBeenLastCalledWith(true)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(updatedAr)
       expect(updateAccessRequirementSpy).toHaveBeenLastCalledWith(
         MOCK_ACCESS_TOKEN,
-        {
-          ...mockManagedACTAccessRequirement,
-          isDUCRequired: false,
-          isIRBApprovalRequired: false,
-          areOtherAttachmentsRequired: false,
-        },
+        updatedAr,
       )
     })
   })
 
   test.todo('can update DUC template')
 
-  test.todo('handles change to expiration period')
-  test.todo('displays an error when expiration period is < 0')
-  test.todo('cannot enter a non-number for expiration period')
-  test.todo('correctly calculates expiration period in ms')
+  test('handles valid change to expiration period', async () => {
+    const expirationPeriodDays = 25
+    const expirationPeriodMs = expirationPeriodDays * DAY_IN_MS
 
-  test.todo(
-    'when isIDURequired is toggled to false, isIDUPublic is disabled and false (even when previously checked)',
-  )
-  test.todo(
-    'when isIDURequired is toggled to true, isIDUPublic is not disabled',
-  )
+    const { user, expirationPeriodInput, ref } = setUp()
+
+    expect(expirationPeriodInput).toHaveValue('1')
+
+    await user.clear(expirationPeriodInput)
+    await user.type(expirationPeriodInput, expirationPeriodDays.toString())
+
+    expect(expirationPeriodInput).toHaveValue(expirationPeriodDays.toString())
+    expect(onSaveComplete).not.toHaveBeenCalled()
+
+    // parent clicking save
+    ref?.current?.save()
+
+    await waitFor(() => {
+      const updatedAr: ManagedACTAccessRequirement = {
+        ...mockManagedACTAccessRequirement,
+        expirationPeriod: expirationPeriodMs,
+      }
+      expect(updateAccessRequirementSpy).toHaveBeenCalledTimes(1)
+      expect(updateAccessRequirementSpy).toHaveBeenLastCalledWith(
+        MOCK_ACCESS_TOKEN,
+        updatedAr,
+      )
+      expect(onSaveComplete).toHaveBeenCalledTimes(1)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(updatedAr)
+    })
+  })
+
+  test('uses 0 when no expiration period is set', async () => {
+    const expirationPeriod = 0
+    const { user, expirationPeriodInput, ref } = setUp()
+
+    await user.clear(expirationPeriodInput)
+    expect(expirationPeriodInput).toHaveValue('')
+
+    // parent clicking save
+    ref?.current?.save()
+
+    await waitFor(() => {
+      const updatedAr: ManagedACTAccessRequirement = {
+        ...mockManagedACTAccessRequirement,
+        expirationPeriod: expirationPeriod,
+      }
+      expect(updateAccessRequirementSpy).toHaveBeenCalledTimes(1)
+      expect(updateAccessRequirementSpy).toHaveBeenLastCalledWith(
+        MOCK_ACCESS_TOKEN,
+        updatedAr,
+      )
+      expect(onSaveComplete).toHaveBeenCalledTimes(1)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(updatedAr)
+    })
+  })
+
+  test('displays an error when expiration period is < 0', async () => {
+    const negativeExpirationPeriodDays = '-25'
+    const { user, expirationPeriodInput, ref } = setUp()
+
+    await user.clear(expirationPeriodInput)
+    await user.type(expirationPeriodInput, negativeExpirationPeriodDays)
+
+    expect(expirationPeriodInput).toHaveValue(negativeExpirationPeriodDays)
+
+    // parent clicking save
+    act(() => {
+      ref?.current?.save()
+    })
+
+    await waitFor(() => {
+      expect(updateAccessRequirementSpy).not.toHaveBeenCalled()
+      expect(onSaveComplete).toHaveBeenCalledTimes(1)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(null)
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        NEGATIVE_EXPIRATION_PERIOD_ERROR,
+      )
+    })
+  })
+
+  test('displays an error when a non-number is entered for expiration period', async () => {
+    const nonNumberExpirationPeriod = 'ab23'
+    const { user, expirationPeriodInput, ref } = setUp()
+
+    await user.clear(expirationPeriodInput)
+    await user.type(expirationPeriodInput, nonNumberExpirationPeriod)
+
+    expect(expirationPeriodInput).toHaveValue(nonNumberExpirationPeriod)
+
+    // parent clicking save
+    act(() => {
+      ref?.current?.save()
+    })
+
+    await waitFor(() => {
+      expect(updateAccessRequirementSpy).not.toHaveBeenCalled()
+      expect(onSaveComplete).toHaveBeenCalledTimes(1)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(null)
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        `Please enter a valid expiration period (in days): For input string: "${nonNumberExpirationPeriod}"`,
+      )
+    })
+  })
+
+  test('when isIDURequired is toggled to false, isIDUPublic is disabled and false (even when previously checked)', async () => {
+    const { user, checkboxes } = setUp()
+
+    expect(checkboxes.isIDURequired).toBeChecked()
+    expect(checkboxes.isIDUPublic).toBeChecked()
+    expect(checkboxes.isIDUPublic).not.toBeDisabled()
+
+    await user.click(checkboxes.isIDURequired)
+
+    expect(checkboxes.isIDURequired).not.toBeChecked()
+    expect(checkboxes.isIDUPublic).not.toBeChecked()
+    expect(checkboxes.isIDUPublic).toBeDisabled()
+  })
+
+  test('when isIDURequired is toggled to true, isIDUPublic is not disabled', async () => {
+    const accessRequirement: ManagedACTAccessRequirement = {
+      ...mockManagedACTAccessRequirement,
+      isIDURequired: false,
+      isIDUPublic: false,
+    }
+    const { user, checkboxes } = setUp({ accessRequirement, onSaveComplete })
+
+    expect(checkboxes.isIDURequired).not.toBeChecked()
+    expect(checkboxes.isIDUPublic).not.toBeChecked()
+    expect(checkboxes.isIDUPublic).toBeDisabled()
+
+    await user.click(checkboxes.isIDURequired)
+
+    expect(checkboxes.isIDURequired).toBeChecked()
+    expect(checkboxes.isIDUPublic).not.toBeChecked()
+    expect(checkboxes.isIDUPublic).not.toBeDisabled()
+  })
 
   describe('returnValidExpirationPeriodOrErrorMessage', () => {
     test('empty string is converted to 0', () => {
@@ -270,10 +402,12 @@ describe('SetManagedAccessrequirementFields', () => {
       )
     })
     test('negative expiration period days return an error message', () => {
-      const errorMsg =
-        'Please enter a valid expiration period (in days): If expiration period is set, then it must be greater than 0.'
-      expect(returnValidExpirationPeriodOrErrorMessage('-1')).toBe(errorMsg)
-      expect(returnValidExpirationPeriodOrErrorMessage('-123')).toBe(errorMsg)
+      expect(returnValidExpirationPeriodOrErrorMessage('-1')).toBe(
+        NEGATIVE_EXPIRATION_PERIOD_ERROR,
+      )
+      expect(returnValidExpirationPeriodOrErrorMessage('-123')).toBe(
+        NEGATIVE_EXPIRATION_PERIOD_ERROR,
+      )
     })
     test('invalid input strings return an error message', () => {
       const errorMsgRegex =

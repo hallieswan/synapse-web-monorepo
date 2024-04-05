@@ -99,23 +99,15 @@ export function useGetAccessRequirementWikiPageKey(
   })
 }
 
-export function useCreateAccessRequirement(
-  options?: UseMutationOptions<
-    AccessRequirement,
-    SynapseClientError,
-    Partial<AccessRequirement>
-  >,
+export function useCreateAccessRequirement<T extends AccessRequirement>(
+  options?: UseMutationOptions<T, SynapseClientError, Partial<T>>,
 ) {
   const queryClient = useQueryClient()
   const { accessToken, keyFactory } = useSynapseContext()
 
-  return useMutation<
-    AccessRequirement,
-    SynapseClientError,
-    Partial<AccessRequirement>
-  >({
+  return useMutation<T, SynapseClientError, Partial<T>>({
     ...options,
-    mutationFn: ar => createAccessRequirement(accessToken, ar),
+    mutationFn: ar => createAccessRequirement<T>(accessToken, ar),
     onSuccess: async (newAr, ar, ctx) => {
       const accessRequirementQueryKey = keyFactory.getAccessRequirementQueryKey(
         newAr.id.toString(),
@@ -130,16 +122,12 @@ export function useCreateAccessRequirement(
   })
 }
 
-export function useUpdateAccessRequirement(
-  options?: UseMutationOptions<
-    AccessRequirement,
-    SynapseClientError,
-    AccessRequirement
-  >,
+export function useUpdateAccessRequirement<T extends AccessRequirement>(
+  options?: UseMutationOptions<T, SynapseClientError, T>,
 ) {
   const queryClient = useQueryClient()
   const { accessToken, keyFactory } = useSynapseContext()
-  return useMutation<AccessRequirement, SynapseClientError, AccessRequirement>({
+  return useMutation<T, SynapseClientError, T>({
     ...options,
     mutationFn: ar => updateAccessRequirement(accessToken, ar),
     onSuccess: async (newAr, ar, ctx) => {

@@ -19,6 +19,8 @@ import {
 } from '@sage-bionetworks/synapse-types'
 import { SynapseApiResponse } from '../handlers'
 import {
+  MOCK_ETAG,
+  MOCK_NEWLY_CREATED_AR_ID,
   mockAccessRequirements,
   mockAccessRequirementWikiPageKeys,
   mockSelfSignAccessRequirement,
@@ -78,9 +80,14 @@ export function createAccessRequirement(backendOrigin: string) {
     `${backendOrigin}${ACCESS_REQUIREMENT}`,
     async (req, res, ctx) => {
       // TODO - confirm this status code
+      const requestBody: AccessRequirement = await req.json()
       return res(
         ctx.status(201),
-        ctx.json({ ...req, id: 1000, etag: 'mock-etag' }),
+        ctx.json({
+          ...requestBody,
+          id: MOCK_NEWLY_CREATED_AR_ID,
+          etag: MOCK_ETAG,
+        }),
       )
     },
   )
@@ -91,7 +98,8 @@ export function updateAccessRequirement(backendOrigin: string) {
     `${backendOrigin}${ACCESS_REQUIREMENT_BY_ID(':id')}`,
     async (req, res, ctx) => {
       // TODO - confirm this status code
-      return res(ctx.status(200), ctx.json(req))
+      const requestBody: AccessRequirement = await req.json()
+      return res(ctx.status(200), ctx.json(requestBody))
     },
   )
 }

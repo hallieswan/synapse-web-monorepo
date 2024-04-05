@@ -75,7 +75,10 @@ export type SetAccessRequirementCommonFieldsProps = {
   /* Provided when editing an existing AR */
   accessRequirementId?: string
   /* Called when AR has been saved or an error has been returned */
-  onSaveComplete: (saveSuccessful: boolean) => void
+  onSaveComplete: (
+    /* null when an error has been returned */
+    updatedAr: AccessRequirement | null,
+  ) => void
 }
 
 export const SetAccessRequirementCommonFields = React.forwardRef(
@@ -99,23 +102,23 @@ export const SetAccessRequirementCommonFields = React.forwardRef(
 
     const isEditing = !subject
 
-    const onMutationSuccess = () => {
+    const onMutationSuccess = (ar: AccessRequirement) => {
       setClientError(null)
-      onSaveComplete(true)
+      onSaveComplete(ar)
     }
 
     const onMutationError = (error: SynapseClientError) => {
       setClientError(error.reason)
-      onSaveComplete(false)
+      onSaveComplete(null)
     }
 
     const { mutate: createAccessRequirement } = useCreateAccessRequirement({
-      onSuccess: () => onMutationSuccess(),
+      onSuccess: newAr => onMutationSuccess(newAr),
       onError: error => onMutationError(error),
     })
 
     const { mutate: updateAccessRequirement } = useUpdateAccessRequirement({
-      onSuccess: () => onMutationSuccess(),
+      onSuccess: updatedAr => onMutationSuccess(updatedAr),
       onError: error => onMutationError(error),
     })
 
@@ -199,7 +202,7 @@ export const SetAccessRequirementCommonFields = React.forwardRef(
               if (name === '') {
                 setNameError(MISSING_NAME_ERROR_MESSAGE)
               }
-              onSaveComplete(false)
+              onSaveComplete(null)
             } else {
               if (isEditing) {
                 updateAccessRequirement({
