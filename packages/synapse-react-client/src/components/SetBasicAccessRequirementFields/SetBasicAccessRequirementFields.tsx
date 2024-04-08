@@ -10,7 +10,7 @@ import { AccessorRequirements } from './AccessorRequirements'
 import { SynapseSpinner } from '../LoadingScreen/LoadingScreen'
 import { AccessRequirementWikiInstructions } from './AccessRequirementWikiInstructions'
 
-type BasicAccessRequirement = Exclude<
+export type BasicAccessRequirement = Exclude<
   AccessRequirement,
   ManagedACTAccessRequirement
 >

@@ -12,6 +12,10 @@ import {
   SetAccessRequirementCommonFieldsHandle,
   SetAccessRequirementCommonFieldsProps,
 } from '../SetAccessRequirementCommonFields'
+import SetBasicAccessRequirementFields, {
+  BasicAccessRequirement,
+  SetBasicAccessRequirementFieldsHandle,
+} from '../SetBasicAccessRequirementFields'
 import SetManagedAccessRequirementFields, {
   SetManagedAccessRequirementFieldsHandle,
 } from '../SetManagedAccessRequirementFields'
@@ -48,6 +52,8 @@ export const CreateAccessRequirementWizard: React.FunctionComponent<
   const setManagedArFieldsRef =
     useRef<SetManagedAccessRequirementFieldsHandle>(null)
   const editArAclRef = useRef<AccessRequirementAclEditorHandle>(null)
+  const setBasicArFieldsRef =
+    useRef<SetBasicAccessRequirementFieldsHandle>(null)
 
   const isEditing = 'accessRequirementId' in props
 
@@ -80,9 +86,9 @@ export const CreateAccessRequirementWizard: React.FunctionComponent<
             accessRequirement={
               accessRequirement! as ManagedACTAccessRequirement
             }
-            onSaveComplete={accessRequirement => {
-              if (accessRequirement) {
-                setAccessRequirement(accessRequirement)
+            onSaveComplete={updatedAr => {
+              if (updatedAr) {
+                setAccessRequirement(updatedAr)
                 setStep('SET_MANAGED_AR_ACL_PERMISSIONS')
               }
               setIsLoading(false)
@@ -102,8 +108,20 @@ export const CreateAccessRequirementWizard: React.FunctionComponent<
             }}
           />
         )
-      default:
-        return <>TODO</>
+      case 'SET_BASIC_AR_FIELDS':
+        return (
+          <SetBasicAccessRequirementFields
+            ref={setBasicArFieldsRef}
+            accessRequirement={accessRequirement! as BasicAccessRequirement}
+            onSaveComplete={updatedAr => {
+              if (updatedAr) {
+                setAccessRequirement(updatedAr)
+                onComplete()
+              }
+              setIsLoading(false)
+            }}
+          />
+        )
     }
   }, [
     step,
@@ -126,10 +144,8 @@ export const CreateAccessRequirementWizard: React.FunctionComponent<
         editArAclRef?.current?.save()
         return
       case 'SET_BASIC_AR_FIELDS':
-        // TODO
-        console.log('todo')
+        setBasicArFieldsRef?.current?.save()
     }
-    return onComplete
   }
 
   return (
