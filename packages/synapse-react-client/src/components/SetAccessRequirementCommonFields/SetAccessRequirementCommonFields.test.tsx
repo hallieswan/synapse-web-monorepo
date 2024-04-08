@@ -292,7 +292,9 @@ describe('SetAccessRequirementCommonFields', () => {
   })
 
   const existingEntityArs = [
-    mockLockAccessRequirement,
+    // Lock ARs can only be deleted by ACT, so will not be managed with this component
+    // ...so will not be included in this test.
+    // mockLockAccessRequirement,
     mockSelfSignAccessRequirement,
     mockManagedACTAccessRequirement,
     mockToUAccessRequirement,

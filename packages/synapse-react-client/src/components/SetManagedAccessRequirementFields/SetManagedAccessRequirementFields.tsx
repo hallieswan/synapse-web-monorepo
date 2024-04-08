@@ -1,4 +1,11 @@
 import {
+  Alert,
+  Box,
+  TextField,
+  Typography,
+  TypographyProps,
+} from '@mui/material'
+import {
   FileHandleAssociateType,
   FileHandleAssociation,
   FileUploadComplete,
@@ -6,24 +13,16 @@ import {
   UploadCallbackResp,
 } from '@sage-bionetworks/synapse-types'
 import React, { useImperativeHandle, useState } from 'react'
-import {
-  useGetAccessRequirementWikiPageKey,
-  useWikiPage,
-  useUpdateAccessRequirement,
-} from '../../synapse-queries'
-import {
-  Alert,
-  Box,
-  Button,
-  TextField,
-  Typography,
-  TypographyProps,
-} from '@mui/material'
-import { UploadDocumentField } from '../AccessRequirementList/ManagedACTAccessRequirementRequestFlow/UploadDocumentField'
-import { Checkbox } from '../widgets/Checkbox'
+import { SynapseClientError } from '../..'
+import { useUpdateAccessRequirement } from '../../synapse-queries'
 import { DAY_IN_MS } from '../../utils/SynapseConstants'
-import { MarkdownSynapse, SynapseClientError } from '../..'
+import { UploadDocumentField } from '../AccessRequirementList/ManagedACTAccessRequirementRequestFlow/UploadDocumentField'
+import {
+  AccessRequirementWikiInstructions,
+  AccessorRequirements,
+} from '../SetBasicAccessRequirementFields'
 import { SynapseErrorBoundary } from '../error/ErrorBanner'
+import { Checkbox } from '../widgets/Checkbox'
 
 export const returnValidExpirationPeriodOrErrorMessage = (
   expirationPeriodDays: string,
@@ -78,19 +77,6 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
       useState<ManagedACTAccessRequirement>(accessRequirement)
     const [expirationPeriodDays, setExpirationPeriodDays] = useState<string>(
       (accessRequirement.expirationPeriod / DAY_IN_MS).toString(),
-    )
-
-    const { data: wikiPageKey } = useGetAccessRequirementWikiPageKey(
-      accessRequirement.id.toString(),
-    )
-
-    const { data: wikiPage } = useWikiPage(
-      wikiPageKey?.ownerObjectId,
-      wikiPageKey?.wikiPageId,
-      wikiPageKey?.ownerObjectType,
-      {
-        enabled: !!wikiPageKey,
-      },
     )
 
     const ducTemplateFileHandleAssociation: FileHandleAssociation = {
@@ -159,24 +145,7 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
 
     return (
       <>
-        <Box mb={2}>
-          <Typography {...headerProps}>{'Instructions (wiki)'}</Typography>
-          {wikiPage && wikiPage.markdown !== '' ? (
-            <MarkdownSynapse markdown={wikiPage.markdown} />
-          ) : (
-            <Typography variant="body1Italic" mb={1}>
-              There is no content.
-            </Typography>
-          )}
-          <Button
-            variant="contained"
-            onClick={() => {
-              // TODO - open WikiMarkdownEditor
-            }}
-          >
-            Edit Instructions
-          </Button>
-        </Box>
+        <AccessRequirementWikiInstructions accessRequirement={updatedAr} />
         <Box>
           <Typography
             bgcolor="#f5f5f5"
@@ -188,39 +157,12 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
             Data Access Request Parameters
           </Typography>
           <Box mt={2} mb={4}>
-            <Box mb={2}>
-              <Typography {...headerProps}>Accessor requirements</Typography>
-              <Checkbox
-                label="Accessors must be certified."
-                checked={updatedAr.isCertifiedUserRequired}
-                onChange={(checked: boolean) =>
-                  setUpdatedAr({
-                    ...updatedAr,
-                    isCertifiedUserRequired: checked,
-                  })
-                }
-              />
-              <Checkbox
-                label="Accessors must have a validated profile."
-                checked={updatedAr.isValidatedProfileRequired}
-                onChange={(checked: boolean) =>
-                  setUpdatedAr({
-                    ...updatedAr,
-                    isValidatedProfileRequired: checked,
-                  })
-                }
-              />
-              <Checkbox
-                label="Accessors must use two-factor authentication (2FA)."
-                checked={updatedAr.isTwoFaRequired}
-                onChange={(checked: boolean) =>
-                  setUpdatedAr({
-                    ...updatedAr,
-                    isTwoFaRequired: checked,
-                  })
-                }
-              />
-            </Box>
+            <AccessorRequirements
+              accessRequirement={updatedAr}
+              onChange={updatedAr =>
+                setUpdatedAr(updatedAr as ManagedACTAccessRequirement)
+              }
+            />
             <Box mb={2}>
               <Typography {...headerProps}>DUC</Typography>
               <Checkbox
