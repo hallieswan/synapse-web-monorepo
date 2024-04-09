@@ -24,7 +24,6 @@ import {
   MOCK_ETAG,
   MOCK_NEWLY_CREATED_AR_ID,
   mockACTAccessRequirement,
-  mockLockAccessRequirement,
   mockManagedACTAccessRequirement,
   mockSelfSignAccessRequirement,
   mockTeamManagedACTAccessRequirement,
