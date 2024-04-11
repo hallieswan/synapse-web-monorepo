@@ -1,3 +1,4 @@
+import { ManagedACTAccessRequirement } from '@sage-bionetworks/synapse-types'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
@@ -11,13 +12,13 @@ import { createWrapper } from '../../testutils/TestingLibraryUtils'
 import { ACCESS_REQUIREMENT_WIKI_PAGE } from '../../utils/APIConstants'
 import { DAY_IN_MS } from '../../utils/SynapseConstants'
 import { BackendDestinationEnum, getEndpoint } from '../../utils/functions'
+import { NO_WIKI_CONTENT } from '../SetBasicAccessRequirementFields/AccessRequirementWikiInstructions'
 import {
   SetManagedAccessRequirementFields,
   SetManagedAccessRequirementFieldsHandle,
   SetManagedAccessRequirementFieldsProps,
   returnValidExpirationPeriodOrErrorMessage,
 } from './SetManagedAccessRequirementFields'
-import { ManagedACTAccessRequirement } from '@sage-bionetworks/synapse-types'
 
 const NEGATIVE_EXPIRATION_PERIOD_ERROR =
   'Please enter a valid expiration period (in days): If expiration period is set, then it must be greater than 0.'
@@ -170,10 +171,8 @@ describe('SetManagedAccessrequirementFields', () => {
     setUp()
 
     expect(mockMarkdownSynapse).not.toHaveBeenCalled()
-    expect(screen.getByText('There is no content.')).toBeVisible()
+    expect(screen.getByText(NO_WIKI_CONTENT)).toBeVisible()
   })
-
-  test.todo('can update wiki instructions')
 
   test('handles updates to accessor requirements', async () => {
     const { user, checkboxes, ref } = setUp()

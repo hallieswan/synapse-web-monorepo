@@ -1,6 +1,7 @@
 import { Alert, Box, Button, TextField } from '@mui/material'
 import { ObjectType, WikiPageKey } from '@sage-bionetworks/synapse-types'
-import React, { useEffect, useState } from 'react'
+import { noop } from 'lodash-es'
+import React, { useEffect, useMemo, useState } from 'react'
 import { ConfirmationDialog, MarkdownEditor } from '..'
 import {
   CreateWikiPageInput,
@@ -17,8 +18,8 @@ export const UNSAVED_CHANGES = 'Unsaved Changes'
 export const NAVIGATE_AWAY_CONFIRMATION_MESSAGE =
   'Any unsaved changes may be lost. Are you sure that you would like to navigate away from this editor?'
 export const ERROR_LOADING_WIKI_FAILED = 'Failed to load the wiki page: '
-const ERROR_SAVING_WIKI =
-  'Could not save your changes.\nIt is recommended that you copy your version of the wiki text so that it is not lost.\n'
+export const ERROR_SAVING_WIKI =
+  'Could not save your changes. It is recommended that you copy your version of the wiki text so that it is not lost. '
 
 export type WikiMarkdownEditorProps = {
   ownerObjectType: ObjectType
@@ -26,8 +27,8 @@ export type WikiMarkdownEditorProps = {
   // if wikiPageId is undefined, will get (or create) the root WikiPage for this ownerObject
   // otherwise, will get the WikiPage with the specified wikiPageId
   wikiPageId?: string
-  onCancel: () => void
-  onSave: () => void
+  onCancel?: () => void
+  onSave?: () => void
   // TODO - implement delete functionality exposed in SWC's WikiMarkdownEditor
   // showDeleteButton: boolean
 }
@@ -41,8 +42,8 @@ export const WikiMarkdownEditor: React.FunctionComponent<
     ownerObjectType,
     ownerObjectId,
     wikiPageId: initialWikiPageId,
-    onCancel,
-    onSave,
+    onCancel = noop,
+    onSave = noop,
   } = props
 
   const [wikiPageId, setWikiPageId] = useState<string | undefined>(
@@ -104,11 +105,15 @@ export const WikiMarkdownEditor: React.FunctionComponent<
     createWikiPage,
   ])
 
-  const wikiPageKey: WikiPageKey = {
-    ownerObjectType,
-    ownerObjectId,
-    wikiPageId: wikiPageId || '',
-  }
+  const wikiPageKey = useMemo(() => {
+    const wikiPageKey: WikiPageKey = {
+      ownerObjectType,
+      ownerObjectId,
+      wikiPageId: wikiPageId || '',
+    }
+    return wikiPageKey
+  }, [wikiPageId, ownerObjectId, ownerObjectType])
+
   const { data: wikiPage, error: errorLoadingWikiPage } = useGetWikiPage(
     wikiPageKey,
     {

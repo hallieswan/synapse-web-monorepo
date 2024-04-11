@@ -1,13 +1,17 @@
 import { Box, Button, Typography } from '@mui/material'
-import React from 'react'
-import { MarkdownSynapse } from '..'
-import { AccessRequirement } from '@sage-bionetworks/synapse-types'
 import {
-  useGetAccessRequirementWikiPageKey,
-  useWikiPage,
-} from '../../synapse-queries'
+  AccessRequirement,
+  ObjectType,
+  WikiPageKey,
+} from '@sage-bionetworks/synapse-types'
+import React, { useMemo, useState } from 'react'
+import { MarkdownSynapse } from '..'
+import { useGetRootWikiPageKey, useGetWikiPage } from '../../synapse-queries'
+import WikiMarkdownEditor from '../WikiMarkdownEditor'
 
-type AccessRequirementWikiInstructionsProps = {
+export const NO_WIKI_CONTENT = 'There is no content.'
+
+export type AccessRequirementWikiInstructionsProps = {
   accessRequirement: AccessRequirement
 }
 
@@ -16,18 +20,28 @@ export const AccessRequirementWikiInstructions: React.FunctionComponent<
 > = (props: AccessRequirementWikiInstructionsProps) => {
   const { accessRequirement } = props
 
-  const { data: wikiPageKey } = useGetAccessRequirementWikiPageKey(
-    accessRequirement.id.toString(),
+  const [openWikiEditor, setOpenWikiEditor] = useState<boolean>(false)
+
+  const ownerObjectType = ObjectType.ACCESS_REQUIREMENT
+  const ownerObjectId = accessRequirement.id.toString()
+
+  const { data: rootWikiPageKey } = useGetRootWikiPageKey(
+    ownerObjectType,
+    ownerObjectId,
   )
 
-  const { data: wikiPage } = useWikiPage(
-    wikiPageKey?.ownerObjectId,
-    wikiPageKey?.wikiPageId,
-    wikiPageKey?.ownerObjectType,
-    {
-      enabled: Boolean(wikiPageKey),
-    },
-  )
+  const wikiPageKey = useMemo(() => {
+    const wikiPageKey: WikiPageKey = {
+      ownerObjectType,
+      ownerObjectId,
+      wikiPageId: rootWikiPageKey?.wikiPageId || '',
+    }
+    return wikiPageKey
+  }, [rootWikiPageKey, ownerObjectId, ownerObjectType])
+
+  const { data: wikiPage } = useGetWikiPage(wikiPageKey, {
+    enabled: wikiPageKey.wikiPageId !== '',
+  })
 
   return (
     <Box mb={2}>
@@ -35,21 +49,21 @@ export const AccessRequirementWikiInstructions: React.FunctionComponent<
         {'Instructions (wiki)'}
       </Typography>
       {wikiPage && wikiPage.markdown !== '' ? (
-        <MarkdownSynapse markdown={wikiPage.markdown} />
+        <MarkdownSynapse key={wikiPage.markdown} markdown={wikiPage.markdown} />
       ) : (
         <Typography variant="body1Italic" mb={1}>
-          There is no content.
+          {NO_WIKI_CONTENT}
         </Typography>
       )}
-      <Button
-        variant="contained"
-        onClick={() => {
-          // TODO - open WikiMarkdownEditor
-          // TODO - if accessRequirement changes, notify parent?
-        }}
-      >
+      <Button variant="contained" onClick={() => setOpenWikiEditor(true)}>
         Edit Instructions
       </Button>
+      {openWikiEditor && (
+        <WikiMarkdownEditor
+          ownerObjectType={ownerObjectType}
+          ownerObjectId={ownerObjectId}
+        />
+      )}
     </Box>
   )
 }

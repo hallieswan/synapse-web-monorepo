@@ -73,7 +73,6 @@ export const SetBasicAccessRequirementFields = React.forwardRef(
 
     return (
       <>
-        <AccessRequirementWikiInstructions accessRequirement={updatedAr} />
         {isDeletingTextInstructions ? (
           <SynapseSpinner />
         ) : (
@@ -86,6 +85,7 @@ export const SetBasicAccessRequirementFields = React.forwardRef(
             }}
           />
         )}
+        <AccessRequirementWikiInstructions accessRequirement={updatedAr} />
         <AccessorRequirements
           accessRequirement={updatedAr}
           onChange={updatedAr =>

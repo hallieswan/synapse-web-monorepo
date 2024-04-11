@@ -15,10 +15,11 @@ import {
 import { rest, server } from '../../mocks/msw/server'
 import { CreateWikiPageInput } from '../../synapse-queries'
 import { createWrapper } from '../../testutils/TestingLibraryUtils'
-import { WIKI_OBJECT_TYPE } from '../../utils/APIConstants'
+import { WIKI_OBJECT_TYPE, WIKI_PAGE } from '../../utils/APIConstants'
 import { BackendDestinationEnum, getEndpoint } from '../../utils/functions'
 import {
   ERROR_LOADING_WIKI_FAILED,
+  ERROR_SAVING_WIKI,
   NAVIGATE_AWAY_CONFIRMATION_MESSAGE,
   UNSAVED_CHANGES,
   WikiMarkdownEditor,
@@ -405,5 +406,38 @@ describe('WikiMarkdownEditor', () => {
     })
   })
 
-  test.todo('displays error if failed to update WikiPage')
+  test('displays error if failed to update WikiPage', async () => {
+    const errorResponse: ErrorResponse = {
+      concreteType: 'org.sagebionetworks.repo.model.ErrorResponse',
+      reason: `USER is not authorized to 'UPDATE' a WIkiPage with an ownerId ${defaultExistingWikiPageProps.ownerObjectId} of type: '${defaultExistingRootWikiPageProps.ownerObjectType}'`,
+    }
+    server.use(
+      rest.put(
+        `${getEndpoint(BackendDestinationEnum.REPO_ENDPOINT)}${WIKI_PAGE(
+          defaultExistingWikiPageProps.ownerObjectType,
+          ':ownerObjectId',
+        )}/:wikiPageId`,
+        async (req, res, ctx) => {
+          return res(ctx.status(403), ctx.json(errorResponse))
+        },
+      ),
+    )
+
+    const { user } = setUp(defaultExistingWikiPageProps)
+    await waitForWikiLoaded()
+
+    const markdownField = await waitForMarkdownSet(mockEntityWikiPage.markdown)
+    const newMarkdown = 'some new markdown'
+    await user.clear(markdownField)
+    await user.type(markdownField, newMarkdown)
+
+    const saveBtn = screen.getByRole('button', { name: 'Save' })
+    await user.click(saveBtn)
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(ERROR_SAVING_WIKI + errorResponse.reason)
+
+    expect(onSave).not.toHaveBeenCalled()
+    expect(onCancel).not.toHaveBeenCalled()
+  })
 })

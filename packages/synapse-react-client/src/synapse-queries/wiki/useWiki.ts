@@ -86,6 +86,15 @@ export const useCreateWikiPage = (
       const wikiPageQueryKey = keyFactory.getWikiPageQueryKey(wikiPageKey)
       queryClient.setQueryData(wikiPageQueryKey, wikiPage)
 
+      // update root WikiPageKey when a root WikiPage is created
+      if (!wikiPage.parentWikiId) {
+        const rootWikiPageKeyQueryKey = keyFactory.getRootWikiPageKeyQueryKey(
+          input.ownerObjectType,
+          input.ownerObjectId,
+        )
+        queryClient.setQueryData(rootWikiPageKeyQueryKey, wikiPageKey)
+      }
+
       if (options?.onSuccess) {
         return await options.onSuccess(wikiPage, input, ctx)
       }

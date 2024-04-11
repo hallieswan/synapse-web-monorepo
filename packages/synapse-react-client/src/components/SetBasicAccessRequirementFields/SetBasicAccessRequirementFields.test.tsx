@@ -270,6 +270,4 @@ describe('SetBasicAccessRequirementFields', () => {
     expect(buttons.deleteTextInstructions).not.toBeInTheDocument()
     expect(screen.queryByText(mockToUAccessRequirement.termsOfUse!)).toBeNull()
   })
-
-  test.todo('updates wiki instructions for each type of AR')
 })
