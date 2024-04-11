@@ -1,12 +1,19 @@
-import { ManagedACTAccessRequirement } from '@sage-bionetworks/synapse-types'
+import {
+  FileUploadComplete,
+  ManagedACTAccessRequirement,
+} from '@sage-bionetworks/synapse-types'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { noop } from 'lodash-es'
 import React from 'react'
-import { MarkdownSynapse, SynapseClient } from '../..'
+import { MarkdownSynapse, SynapseClient, SynapseClientError } from '../..'
 import { MOCK_ACCESS_TOKEN } from '../../mocks/MockSynapseContext'
 import { mockManagedACTAccessRequirement } from '../../mocks/mockAccessRequirements'
 import { mockManagedACTAccessRequirementWikiPage } from '../../mocks/mockWiki'
-import { mockDucTemplateFileHandle } from '../../mocks/mock_file_handle'
+import {
+  mockDucTemplateFileHandle,
+  mockFileHandle,
+} from '../../mocks/mock_file_handle'
 import { rest, server } from '../../mocks/msw/server'
 import { createWrapper } from '../../testutils/TestingLibraryUtils'
 import { ACCESS_REQUIREMENT_WIKI_PAGE } from '../../utils/APIConstants'
@@ -14,6 +21,7 @@ import { DAY_IN_MS } from '../../utils/SynapseConstants'
 import { BackendDestinationEnum, getEndpoint } from '../../utils/functions'
 import { NO_WIKI_CONTENT } from '../SetBasicAccessRequirementFields/AccessRequirementWikiInstructions'
 import {
+  DUC_TEMPLATE_UPLOAD_ERROR,
   SetManagedAccessRequirementFields,
   SetManagedAccessRequirementFieldsHandle,
   SetManagedAccessRequirementFieldsProps,
@@ -246,7 +254,89 @@ describe('SetManagedAccessrequirementFields', () => {
     })
   })
 
-  test.todo('can update DUC template')
+  test('can upload new DUC template file handle', async () => {
+    const newFileName = mockFileHandle.fileName
+    const newFileHandleId = mockFileHandle.id
+    const newFile = new File(['example'], newFileName, {
+      type: 'text/plain',
+    })
+    const fileUploadComplete: FileUploadComplete = {
+      fileHandleId: newFileHandleId,
+      fileName: newFileName,
+    }
+    const mockUploadFile = jest
+      .spyOn(SynapseClient, 'uploadFile')
+      .mockResolvedValue(fileUploadComplete)
+
+    const { user, ref } = setUp()
+    await findDucTemplateButton(mockDucTemplateFileHandle.fileName)
+
+    const fileInput = screen.getByTestId('file-input')
+    await user.upload(fileInput, newFile)
+
+    expect(mockUploadFile).toHaveBeenCalledTimes(1)
+    await findDucTemplateButton(newFileName)
+
+    // simulate parent clicking save
+    ref.current?.save()
+
+    await waitFor(() => {
+      const updatedAr: ManagedACTAccessRequirement = {
+        ...mockManagedACTAccessRequirement,
+        ducTemplateFileHandleId: newFileHandleId,
+      }
+      expect(onSaveComplete).toHaveBeenCalledTimes(1)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(updatedAr)
+      expect(updateAccessRequirementSpy).toHaveBeenLastCalledWith(
+        MOCK_ACCESS_TOKEN,
+        updatedAr,
+      )
+    })
+  })
+
+  test('handles error when uploading new DUC template file handle', async () => {
+    const newFile = new File(['example'], 'some file', {
+      type: 'text/plain',
+    })
+    const errorReason = 'Some upload error'
+    const mockUploadFile = jest
+      .spyOn(SynapseClient, 'uploadFile')
+      .mockImplementation(() => {
+        throw new SynapseClientError(
+          500,
+          errorReason,
+          expect.getState().currentTestName!,
+        )
+      })
+
+    const { user, ref } = setUp()
+    await findDucTemplateButton(mockDucTemplateFileHandle.fileName)
+
+    // hide console.log output by FileUpload
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(noop)
+    const fileInput = screen.getByTestId('file-input')
+    await user.upload(fileInput, newFile)
+    consoleLogSpy.mockRestore()
+
+    expect(mockUploadFile).toHaveBeenCalledTimes(1)
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(DUC_TEMPLATE_UPLOAD_ERROR + errorReason)
+
+    // simulate parent clicking save
+    ref.current?.save()
+
+    await waitFor(() => {
+      expect(onSaveComplete).toHaveBeenCalledTimes(1)
+      expect(onSaveComplete).toHaveBeenLastCalledWith(
+        mockManagedACTAccessRequirement,
+      )
+      expect(updateAccessRequirementSpy).toHaveBeenLastCalledWith(
+        MOCK_ACCESS_TOKEN,
+        mockManagedACTAccessRequirement,
+      )
+    })
+  })
 
   test('handles valid change to expiration period', async () => {
     const expirationPeriodDays = 25

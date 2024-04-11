@@ -24,6 +24,9 @@ import {
 import { SynapseErrorBoundary } from '../error/ErrorBanner'
 import { Checkbox } from '../widgets/Checkbox'
 
+export const DUC_TEMPLATE_UPLOAD_ERROR =
+  'There was an error uploading the DUC template. '
+
 export const returnValidExpirationPeriodOrErrorMessage = (
   expirationPeriodDays: string,
 ) => {
@@ -95,7 +98,7 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
         })
       } else if (!data.success && data.error) {
         setError(
-          `There was an error uploading the DUC template. ${
+          `${DUC_TEMPLATE_UPLOAD_ERROR} ${
             (data.error as SynapseClientError).reason
           }`,
         )
