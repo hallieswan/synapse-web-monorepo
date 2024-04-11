@@ -78,6 +78,7 @@ import {
   USER_PROFILE,
   USER_PROFILE_ID,
   VERIFICATION_SUBMISSION,
+  WIKI_OBJECT_TYPE,
   WIKI_PAGE,
 } from '../utils/APIConstants'
 import { dispatchDownloadListChangeEvent } from '../utils/functions/dispatchDownloadListChangeEvent'
@@ -1178,7 +1179,7 @@ export const getEntityWiki = (
   wikiId: string | undefined = '',
   objectType: ObjectType = ObjectType.ENTITY,
 ) => {
-  const url = `${WIKI_PAGE(objectType)}/${ownerId}/wiki/${wikiId}`
+  const url = `${WIKI_OBJECT_TYPE(objectType)}/${ownerId}/wiki/${wikiId}`
   return doGet<WikiPage>(url, accessToken, BackendDestinationEnum.REPO_ENDPOINT)
 }
 
@@ -1679,13 +1680,37 @@ export const getWikiPageKeyForAccessRequirement = (
   )
 }
 
+/**
+ * Get the root WikiPageKey for the following ObjectTypes:
+ *  - ENTITY: https://rest-docs.synapse.org/rest/GET/entity/ownerId/wikikey.html
+ *  - EVALUATION: https://rest-docs.synapse.org/rest/GET/evaluation/ownerId/wikikey.html
+ *  - ACCESS_REQUIREMENT: https://rest-docs.synapse.org/rest/GET/access_requirement/ownerId/wikikey.html
+ *
+ * Note: The caller must be granted the ACCESS_TYPE.READ permission on the owner.
+ *
+ * @returns a WikiPageKey if the ownerObject has a root WikiPageKey, or null if the ownerObject does not.
+ */
+export const getRootWikiPageKey = (
+  accessToken: string | undefined,
+  ownerObjectType: ObjectType,
+  ownerObjectId: string,
+): Promise<WikiPageKey | null> => {
+  const url = `${WIKI_OBJECT_TYPE(ownerObjectType)}/${ownerObjectId}/wikikey`
+  // It's possible for an ownerObject to not have a root WikiPageKey, so pre-emptively handle 404
+  return allowNotFoundError(() =>
+    doGet<WikiPageKey>(url, accessToken, BackendDestinationEnum.REPO_ENDPOINT),
+  )
+}
+
 export const getWikiAttachmentsFromEntity = (
   accessToken: string | undefined,
   id: string | number,
   wikiId: string | number,
   objectType: ObjectType = ObjectType.ENTITY,
 ): Promise<FileHandleResults> => {
-  const url = `${WIKI_PAGE(objectType)}/${id}/wiki2/${wikiId}/attachmenthandles`
+  const url = `${WIKI_OBJECT_TYPE(
+    objectType,
+  )}/${id}/wiki2/${wikiId}/attachmenthandles`
   return doGet(url, accessToken, BackendDestinationEnum.REPO_ENDPOINT)
 }
 export const getWikiAttachmentsFromEvaluation = (
@@ -1704,10 +1729,85 @@ export const getPresignedUrlForWikiAttachment = (
   fileName: string,
   objectType: ObjectType = ObjectType.ENTITY,
 ): Promise<string> => {
-  const url = `${WIKI_PAGE(
+  const url = `${WIKI_OBJECT_TYPE(
     objectType,
   )}/${id}/wiki2/${wikiId}/attachment?fileName=${fileName}&redirect=false`
   return doGet(url, accessToken, BackendDestinationEnum.REPO_ENDPOINT)
+}
+
+/**
+ * Get specific WikiPage for the following ObjectTypes:
+ *  - ENTITY: https://rest-docs.synapse.org/rest/GET/entity/ownerId/wiki/wikiId.html
+ *  - EVALUATION: https://rest-docs.synapse.org/rest/GET/evaluation/ownerId/wiki/wikiId.html
+ *  - ACCESS_REQUIREMENT: https://rest-docs.synapse.org/rest/GET/access_requirement/ownerId/wiki/wikiId.html
+ *
+ * Note: The caller must be granted the ACCESS_TYPE.READ permission on the owner.
+ */
+export const getWikiPage = (
+  accessToken: string | undefined,
+  wikiPageKey: WikiPageKey,
+): Promise<WikiPage> => {
+  const url = `${WIKI_PAGE(
+    wikiPageKey.ownerObjectType,
+    wikiPageKey.ownerObjectId,
+  )}/${wikiPageKey.wikiPageId}`
+  return doGet<WikiPage>(url, accessToken, BackendDestinationEnum.REPO_ENDPOINT)
+}
+
+/**
+ * Create a WikiPage with the following ObjectTypes as an owner:
+ *   - ENTITY: https://rest-docs.synapse.org/rest/POST/entity/ownerId/wiki.html
+ *   - EVALUATION: https://rest-docs.synapse.org/rest/POST/evaluation/ownerId/wiki.html
+ *   - ACCESS_REQUIREMENT: https://rest-docs.synapse.org/rest/POST/access_requirement/ownerId/wiki.html
+ *
+ * Note: The caller must be granted the ACCESS_TYPE.CREATE permission on the owner.
+ * If the passed WikiPage is a root (parentWikiId = null) and the owner already has a root WikiPage, an error will be returned.
+ */
+export const createWikiPage = (
+  accessToken: string | undefined,
+  ownerObjectType: ObjectType,
+  ownerObjectId: string,
+  wikiPage: Omit<
+    WikiPage,
+    'id' | 'etag' | 'createdOn' | 'createdBy' | 'modifiedOn' | 'modifiedBy'
+  >,
+): Promise<WikiPage> => {
+  return doPost<WikiPage>(
+    WIKI_PAGE(ownerObjectType, ownerObjectId),
+    wikiPage,
+    accessToken,
+    BackendDestinationEnum.REPO_ENDPOINT,
+  )
+}
+
+/**
+ * Update a specific WikiPage for the following ObjectTypes:
+ *   - ENTITY: https://rest-docs.synapse.org/rest/PUT/entity/ownerId/wiki/wikiId.html
+ *   - EVALUATION: https://rest-docs.synapse.org/rest/PUT/evaluation/ownerId/wiki/wikiId.html
+ *   - ACCESS_REQUIREMENT: https://rest-docs.synapse.org/rest/PUT/access_requirement/ownerId/wiki/wikiId.html
+ *
+ * Synapse employs an Optimistic Concurrency Control (OCC) scheme to handle concurrent updates.
+ * Each time a WikiPage is updated a new etag will be issued to the WikiPage. When an update is request,
+ * Synapse will compare the etag of the passed WikiPage with the current etag of the WikiPage.
+ * If the etags do not match, then the update will be rejected with a PRECONDITION_FAILED (412) response.
+ * When this occurs the caller should get the latest copy of the WikiPage and re-apply any changes to the object,
+ * then re-attempt the update. This ensures the caller has all changes applied by other users before applying their own changes.
+ *
+ * Note: The caller must be granted the ACCESS_TYPE.UPDATE permission on the owner.
+ */
+export const updateWikiPage = (
+  accessToken: string | undefined,
+  ownerObjectType: ObjectType,
+  ownerObjectId: string,
+  wikiPage: WikiPage,
+): Promise<WikiPage> => {
+  const url = `${WIKI_PAGE(ownerObjectType, ownerObjectId)}/${wikiPage.id}`
+  return doPut<WikiPage>(
+    url,
+    wikiPage,
+    accessToken,
+    BackendDestinationEnum.REPO_ENDPOINT,
+  )
 }
 
 export const isInSynapseExperimentalMode = (): boolean => {

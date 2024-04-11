@@ -208,6 +208,13 @@ export const PROJECTS = `${REPO}/projects`
 export const ENTITY_ACTIONS_REQUIRED = (entityId: string) =>
   `${REPO}/entity/${entityId}/actions/download`
 
-export const WIKI_PAGE = (objectType: ObjectType) => {
-  return `${REPO}/${ObjectType[objectType].toLocaleLowerCase()}`
+export const WIKI_OBJECT_TYPE = (objectType: ObjectType) => {
+  return `${REPO}/${ObjectType[objectType].toLowerCase()}`
+}
+
+export const WIKI_PAGE = (
+  ownerObjectType: ObjectType,
+  ownerObjectId: string,
+) => {
+  return `${WIKI_OBJECT_TYPE(ownerObjectType)}/${ownerObjectId}/wiki`
 }

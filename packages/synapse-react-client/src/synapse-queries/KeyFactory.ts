@@ -27,6 +27,7 @@ import {
   TYPE_FILTER,
   ViewColumnModelRequest,
   ViewEntityType,
+  WikiPageKey,
 } from '@sage-bionetworks/synapse-types'
 import { QueryKey } from '@tanstack/react-query'
 import { removeTrailingUndefinedElements } from '../utils/functions/ArrayUtils'
@@ -184,7 +185,8 @@ const downloadListQueryKeys = {
 }
 
 const ACCESS_REQUIREMENT_QUERY_KEY = 'accessRequirement'
-const WIKI_KEY = 'wiki'
+const ROOT_WIKI_PAGE_KEY_QUERY_KEY = 'rootWikiPageKey'
+const WIKI_PAGE_QUERY_KEY = 'wikiPage'
 
 /**
  * Returns a react-query Query Key.
@@ -357,12 +359,25 @@ export class KeyFactory {
   }
 
   // TODO - evaluate this key
-  public getWikiPageKey(
-    ownerId: string | undefined,
-    wikiId: string | undefined = '',
-    objectType: ObjectType = ObjectType.ENTITY,
+  public getRootWikiPageKeyQueryKey(
+    ownerObjectType: ObjectType,
+    ownerObjectId: string,
   ) {
-    return this.getKey(WIKI_KEY, ownerId, wikiId, objectType)
+    return this.getKey(
+      ROOT_WIKI_PAGE_KEY_QUERY_KEY,
+      ownerObjectType,
+      ownerObjectId,
+    )
+  }
+
+  // TODO - evaluate this key
+  public getWikiPageQueryKey(wikiPageKey: WikiPageKey) {
+    return this.getKey(
+      WIKI_PAGE_QUERY_KEY,
+      wikiPageKey.ownerObjectType,
+      wikiPageKey.ownerObjectId,
+      wikiPageKey.wikiPageId,
+    )
   }
 
   public getFullTableQueryResultQueryKey(
