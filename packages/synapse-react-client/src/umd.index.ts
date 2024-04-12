@@ -79,6 +79,7 @@ import EntityViewScopeEditorModal from './components/EntityViewScopeEditor/Entit
 import SubmissionViewScopeEditorModal from './components/SubmissionViewScopeEditor/SubmissionViewScopeEditorModal'
 import AvailableEvaluationQueueList from './components/ChallengeSubmission/AvailableEvaluationQueueList'
 import AccessRequirementAclEditor from './components/AccessRequirementAclEditor'
+import CreateAccessRequirementWizard from './components/CreateAccessRequirementWizard'
 
 // Also include scss in the bundle
 import './style/main.scss'
@@ -163,6 +164,7 @@ const SynapseComponents = {
   EntityViewScopeEditorModal,
   SubmissionViewScopeEditorModal,
   AccessRequirementAclEditor,
+  CreateAccessRequirementWizard,
 }
 
 // Include the version in the build
