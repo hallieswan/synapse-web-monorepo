@@ -12,7 +12,7 @@ import {
   ManagedACTAccessRequirement,
   UploadCallbackResp,
 } from '@sage-bionetworks/synapse-types'
-import React, { useImperativeHandle, useState } from 'react'
+import React, { useImperativeHandle, useMemo, useState } from 'react'
 import { SynapseClientError } from '../..'
 import { useUpdateAccessRequirement } from '../../synapse-queries'
 import { DAY_IN_MS } from '../../utils/SynapseConstants'
@@ -82,11 +82,18 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
       (accessRequirement.expirationPeriod / DAY_IN_MS).toString(),
     )
 
-    const ducTemplateFileHandleAssociation: FileHandleAssociation = {
-      fileHandleId: updatedAr.ducTemplateFileHandleId,
-      associateObjectType: FileHandleAssociateType.AccessRequirementAttachment,
-      associateObjectId: updatedAr.id.toString(),
-    }
+    const ducTemplateFileHandleAssociation = useMemo(() => {
+      if (updatedAr.ducTemplateFileHandleId) {
+        const ducTemplateFileHandleAssociation: FileHandleAssociation = {
+          fileHandleId: updatedAr.ducTemplateFileHandleId,
+          associateObjectType:
+            FileHandleAssociateType.AccessRequirementAttachment,
+          associateObjectId: updatedAr.id.toString(),
+        }
+        return ducTemplateFileHandleAssociation
+      }
+      return undefined
+    }, [updatedAr.ducTemplateFileHandleId])
 
     const uploadDucTemplateCallback = (data: UploadCallbackResp) => {
       if (data.resp && data.success) {
@@ -184,7 +191,11 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
                   isLoading={isUpdatingAccessRequirement}
                   uploadCallback={resp => uploadDucTemplateCallback(resp)}
                   documentName="Template DUC"
-                  fileHandleAssociations={[ducTemplateFileHandleAssociation]}
+                  fileHandleAssociations={
+                    ducTemplateFileHandleAssociation
+                      ? [ducTemplateFileHandleAssociation]
+                      : undefined
+                  }
                   isMultiFileUpload={false}
                   uploadBtnVariant="contained"
                 />

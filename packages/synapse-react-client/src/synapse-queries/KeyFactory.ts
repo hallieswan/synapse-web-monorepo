@@ -358,7 +358,6 @@ export class KeyFactory {
     )
   }
 
-  // TODO - evaluate this key
   public getRootWikiPageKeyQueryKey(
     ownerObjectType: ObjectType,
     ownerObjectId: string,
@@ -370,7 +369,6 @@ export class KeyFactory {
     )
   }
 
-  // TODO - evaluate this key
   public getWikiPageQueryKey(wikiPageKey: WikiPageKey) {
     return this.getKey(
       WIKI_PAGE_QUERY_KEY,

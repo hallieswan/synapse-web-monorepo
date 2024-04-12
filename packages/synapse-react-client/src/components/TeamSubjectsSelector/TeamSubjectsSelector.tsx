@@ -1,10 +1,15 @@
-import { AddCircleTwoTone, HelpOutlineTwoTone } from '@mui/icons-material'
+import {
+  AddCircleTwoTone,
+  ErrorTwoTone,
+  HelpOutlineTwoTone,
+} from '@mui/icons-material'
 import {
   Alert,
   Box,
   Button,
   IconButton,
   InputLabel,
+  Skeleton,
   Stack,
   TextField,
   Tooltip,
@@ -14,10 +19,43 @@ import {
   RestrictableObjectDescriptor,
   RestrictableObjectType,
 } from '@sage-bionetworks/synapse-types'
-import React, { useState } from 'react'
-import IconSvg from '../IconSvg'
-import UserOrTeamBadge from '../UserOrTeamBadge'
 import { noop } from 'lodash-es'
+import React, { useMemo, useState } from 'react'
+import { useGetTeamList } from '../../synapse-queries'
+import IconSvg from '../IconSvg'
+import TeamBadge from '../TeamBadge'
+
+type TeamBadgeOrErrorProps = {
+  teamId: string
+}
+const TeamBadgeOrError: React.FunctionComponent<TeamBadgeOrErrorProps> = (
+  props: TeamBadgeOrErrorProps,
+) => {
+  const { teamId } = props
+
+  const { data: teamList, isLoading, error } = useGetTeamList([teamId])
+  const team = useMemo(() => {
+    if (teamList && teamList.list.length === 1) {
+      return teamList.list[0]
+    }
+    return undefined
+  }, [teamList])
+
+  if (isLoading) {
+    return <Skeleton width={125} height={30} />
+  }
+  if (error || !team) {
+    return (
+      <Stack gap="5px" direction="row" alignItems="center" role="alert">
+        <ErrorTwoTone color="error" />
+        <Typography variant="smallText1" color="error">
+          {error?.reason || `Error: ${teamId}`}
+        </Typography>
+      </Stack>
+    )
+  }
+  return <TeamBadge teamId={team.id} teamName={team.name} />
+}
 
 export type TeamSubjectsSelectorProps = {
   // will be filtered to only team subjects
@@ -28,6 +66,8 @@ export type TeamSubjectsSelectorProps = {
 
 export const TEAM_ALREADY_SELECTED = (teamId: string) =>
   `Team ${teamId} has already been added to this AR.`
+export const TEAM_PARSING_ERROR = (teamId: string) =>
+  `Parsing errors encountered. Invalid Team ID: ${teamId}`
 export const NO_TEAMS_SELECTED = 'No teams selected.'
 export const REMOVE_TEXT = 'Remove from Access Requirement'
 export const HELP_TEXT = 'Enter Team IDs (i.e. 123, 456)'
@@ -60,14 +100,17 @@ const TeamSubjectsSelector: React.FunctionComponent<
     if (teamIds && teamIds.length > 0) {
       const newTeamSubjects = [...teamSubjects]
       for (const newTeamId of teamIds) {
+        const validId = /^\d+$/.test(newTeamId)
         const alreadyAdded = teamSubjects.some(
           subject => subject.id === newTeamId,
         )
-        if (alreadyAdded) {
+        if (!validId) {
+          setError(TEAM_PARSING_ERROR(newTeamId))
+          return
+        } else if (alreadyAdded) {
           setError(TEAM_ALREADY_SELECTED(newTeamId))
           return
         } else {
-          // TODO - handle teamIds that do not exist?
           const newSubject: RestrictableObjectDescriptor = {
             id: newTeamId,
             type: RestrictableObjectType.TEAM,
@@ -98,7 +141,7 @@ const TeamSubjectsSelector: React.FunctionComponent<
               pb={1}
               data-testid="selected-team"
             >
-              <UserOrTeamBadge principalId={subject.id} />
+              <TeamBadgeOrError teamId={subject.id} />
               <IconButton
                 aria-label={REMOVE_TEXT}
                 onClick={() => onRemove(subject.id)}

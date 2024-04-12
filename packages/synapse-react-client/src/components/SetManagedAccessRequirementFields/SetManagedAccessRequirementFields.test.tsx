@@ -55,6 +55,7 @@ const updateAccessRequirementSpy = jest.spyOn(
   SynapseClient,
   'updateAccessRequirement',
 )
+const getFilesSpy = jest.spyOn(SynapseClient, 'getFiles')
 
 const defaultProps: SetManagedAccessRequirementFieldsProps = {
   accessRequirement: mockManagedACTAccessRequirement,
@@ -252,6 +253,28 @@ describe('SetManagedAccessrequirementFields', () => {
         updatedAr,
       )
     })
+  })
+
+  test('displays DUC template download button when there is an existing DUC template', () => {
+    const { buttons } = setUp()
+    expect(buttons.uploadDucTemplate).toBeVisible()
+    const val = document.getElementById('duc-download-0')
+    expect(val).not.toBeNull()
+    expect(getFilesSpy).toHaveBeenCalled()
+  })
+
+  test('does not display DUC template download button when there is not an existing DUC template', () => {
+    const { buttons } = setUp({
+      ...defaultProps,
+      accessRequirement: {
+        ...mockManagedACTAccessRequirement,
+        ducTemplateFileHandleId: undefined,
+      },
+    })
+    expect(buttons.uploadDucTemplate).toBeVisible()
+    const val = document.getElementById('duc-download-0')
+    expect(val).toBeNull()
+    expect(getFilesSpy).not.toHaveBeenCalled()
   })
 
   test('can upload new DUC template file handle', async () => {

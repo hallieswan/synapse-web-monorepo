@@ -18,8 +18,10 @@ import TeamSubjectsSelector, {
   HELP_TEXT,
   REMOVE_TEXT,
   TEAM_ALREADY_SELECTED,
+  TEAM_PARSING_ERROR,
   TeamSubjectsSelectorProps,
 } from './TeamSubjectsSelector'
+import { MOCK_USER_ID } from '../../mocks/user/mock_user_profile'
 
 const onUpdate = jest.fn()
 const onUpdateTeamIDsTextbox = jest.fn()
@@ -133,5 +135,37 @@ describe('TeamSubjectsSelector', () => {
 
     expect(onUpdate).not.toHaveBeenCalled()
     expect(onUpdateTeamIDsTextbox).toHaveBeenLastCalledWith(newTeamIds)
+  })
+
+  test('displays an error when error parsing team ids', async () => {
+    const { user } = await setUp()
+
+    const invalidTeamId = 'abc'
+    const newTeamIds = `${MOCK_TEAM_ID_2}, ${invalidTeamId}`
+    await addTeams(newTeamIds, user)
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(TEAM_PARSING_ERROR(invalidTeamId))
+
+    expect(onUpdate).not.toHaveBeenCalled()
+    expect(onUpdateTeamIDsTextbox).toHaveBeenLastCalledWith(newTeamIds)
+  })
+
+  test('displays an error when team is not found', async () => {
+    const nonTeamSubject: RestrictableObjectDescriptor = {
+      id: MOCK_USER_ID.toString(),
+      type: RestrictableObjectType.TEAM,
+    }
+    renderComponent({
+      ...defaultProps,
+      subjects: [teamSubject, nonTeamSubject],
+    })
+
+    await screen.findByRole('link', { name: mockTeamData.name })
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(
+      `Team with id ${nonTeamSubject.id} not found`,
+    )
   })
 })
