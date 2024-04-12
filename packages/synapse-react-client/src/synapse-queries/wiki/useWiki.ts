@@ -10,13 +10,13 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
-import { SynapseClientError, useSynapseContext } from '../..'
 import {
   createWikiPage,
   getRootWikiPageKey,
   getWikiPage,
   updateWikiPage,
 } from '../../synapse-client'
+import { SynapseClientError, useSynapseContext } from '../../utils'
 
 export const useGetRootWikiPageKey = (
   ownerObjectType: ObjectType,

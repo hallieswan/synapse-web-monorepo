@@ -6,7 +6,6 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { noop } from 'lodash-es'
 import React from 'react'
-import { MarkdownSynapse, SynapseClient, SynapseClientError } from '../..'
 import { MOCK_ACCESS_TOKEN } from '../../mocks/MockSynapseContext'
 import { mockManagedACTAccessRequirement } from '../../mocks/mockAccessRequirements'
 import { mockManagedACTAccessRequirementWikiPage } from '../../mocks/mockWiki'
@@ -15,10 +14,13 @@ import {
   mockFileHandle,
 } from '../../mocks/mock_file_handle'
 import { rest, server } from '../../mocks/msw/server'
+import SynapseClient from '../../synapse-client'
 import { createWrapper } from '../../testutils/TestingLibraryUtils'
+import { SynapseClientError } from '../../utils'
 import { ACCESS_REQUIREMENT_WIKI_PAGE } from '../../utils/APIConstants'
 import { DAY_IN_MS } from '../../utils/SynapseConstants'
 import { BackendDestinationEnum, getEndpoint } from '../../utils/functions'
+import { MarkdownSynapse } from '../Markdown'
 import { NO_WIKI_CONTENT } from '../SetBasicAccessRequirementFields/AccessRequirementWikiInstructions'
 import {
   DUC_TEMPLATE_UPLOAD_ERROR,

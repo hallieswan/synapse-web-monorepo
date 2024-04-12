@@ -4,8 +4,10 @@ import {
   ManagedACTAccessRequirement,
 } from '@sage-bionetworks/synapse-types'
 import React, { useMemo, useRef, useState } from 'react'
-import { AccessRequirementAclEditor } from '..'
-import { AccessRequirementAclEditorHandle } from '../AccessRequirementAclEditor/AccessRequirementAclEditor'
+import {
+  AccessRequirementAclEditor,
+  AccessRequirementAclEditorHandle,
+} from '../AccessRequirementAclEditor/AccessRequirementAclEditor'
 import ConfirmationDialog from '../ConfirmationDialog'
 import {
   SetAccessRequirementCommonFields,

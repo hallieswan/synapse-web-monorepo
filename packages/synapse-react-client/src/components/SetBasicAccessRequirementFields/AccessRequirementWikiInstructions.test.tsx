@@ -2,7 +2,6 @@ import { ObjectType, WikiPage } from '@sage-bionetworks/synapse-types'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { MarkdownSynapse, SynapseClient } from '../..'
 import { MOCK_ACCESS_TOKEN } from '../../mocks/MockSynapseContext'
 import {
   mockACTAccessRequirement,
@@ -11,7 +10,9 @@ import {
 } from '../../mocks/mockAccessRequirements'
 import { mockACTAccessRequirementWikiPage } from '../../mocks/mockWiki'
 import { server } from '../../mocks/msw/server'
+import SynapseClient from '../../synapse-client'
 import { createWrapper } from '../../testutils/TestingLibraryUtils'
+import { MarkdownSynapse } from '../Markdown'
 import {
   AccessRequirementWikiInstructions,
   AccessRequirementWikiInstructionsProps,

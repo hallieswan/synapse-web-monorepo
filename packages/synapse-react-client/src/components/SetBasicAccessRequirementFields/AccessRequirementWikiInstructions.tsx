@@ -5,8 +5,8 @@ import {
   WikiPageKey,
 } from '@sage-bionetworks/synapse-types'
 import React, { useMemo, useState } from 'react'
-import { MarkdownSynapse } from '..'
 import { useGetRootWikiPageKey, useGetWikiPage } from '../../synapse-queries'
+import { MarkdownSynapse } from '../Markdown'
 import WikiMarkdownEditor from '../WikiMarkdownEditor'
 
 export const NO_WIKI_CONTENT = 'There is no content.'

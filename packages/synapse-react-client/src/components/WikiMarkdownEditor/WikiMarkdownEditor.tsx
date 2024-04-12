@@ -2,7 +2,6 @@ import { Alert, Box, Button, TextField } from '@mui/material'
 import { ObjectType, WikiPageKey } from '@sage-bionetworks/synapse-types'
 import { noop } from 'lodash-es'
 import React, { useEffect, useMemo, useState } from 'react'
-import { ConfirmationDialog, MarkdownEditor } from '..'
 import {
   CreateWikiPageInput,
   UpdateWikiPageInput,
@@ -11,8 +10,10 @@ import {
   useGetWikiPage,
   useUpdateWikiPage,
 } from '../../synapse-queries'
+import ConfirmationDialog from '../ConfirmationDialog'
 import { DialogBase } from '../DialogBase'
 import { SynapseSpinner } from '../LoadingScreen/LoadingScreen'
+import { MarkdownEditor } from '../Markdown'
 
 export const UNSAVED_CHANGES = 'Unsaved Changes'
 export const NAVIGATE_AWAY_CONFIRMATION_MESSAGE =

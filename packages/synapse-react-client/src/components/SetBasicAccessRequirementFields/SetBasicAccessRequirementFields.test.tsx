@@ -1,6 +1,8 @@
-import { MarkdownSynapse } from '..'
+import { ACTAccessRequirement } from '@sage-bionetworks/synapse-types'
 import { render, screen, waitFor, within } from '@testing-library/react'
-import { SynapseClient } from '../..'
+import userEvent from '@testing-library/user-event'
+import React from 'react'
+import { MOCK_ACCESS_TOKEN } from '../../mocks/MockSynapseContext'
 import {
   mockACTAccessRequirement,
   mockACTAccessRequirementWithWiki,
@@ -8,20 +10,18 @@ import {
   mockToUAccessRequirement,
 } from '../../mocks/mockAccessRequirements'
 import {
+  mockACTAccessRequirementWikiPage,
+  mockSelfSignAccessRequirementWikiPage,
+} from '../../mocks/mockWiki'
+import { server } from '../../mocks/msw/server'
+import SynapseClient from '../../synapse-client'
+import { createWrapper } from '../../testutils/TestingLibraryUtils'
+import { MarkdownSynapse } from '../Markdown'
+import {
   SetBasicAccessRequirementFields,
   SetBasicAccessRequirementFieldsHandle,
   SetBasicAccessRequirementFieldsProps,
 } from './SetBasicAccessRequirementFields'
-import React from 'react'
-import { createWrapper } from '../../testutils/TestingLibraryUtils'
-import userEvent from '@testing-library/user-event'
-import { MOCK_ACCESS_TOKEN } from '../../mocks/MockSynapseContext'
-import { server } from '../../mocks/msw/server'
-import {
-  mockACTAccessRequirementWikiPage,
-  mockSelfSignAccessRequirementWikiPage,
-} from '../../mocks/mockWiki'
-import { ACTAccessRequirement } from '@sage-bionetworks/synapse-types'
 
 const MARKDOWN_SYNAPSE_TEST_ID = 'MarkdownSynapseContent'
 jest.mock('../Markdown/MarkdownSynapse', () => ({

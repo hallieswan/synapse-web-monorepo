@@ -13,8 +13,8 @@ import {
   UploadCallbackResp,
 } from '@sage-bionetworks/synapse-types'
 import React, { useImperativeHandle, useMemo, useState } from 'react'
-import { SynapseClientError } from '../..'
 import { useUpdateAccessRequirement } from '../../synapse-queries'
+import { SynapseClientError } from '../../utils'
 import { DAY_IN_MS } from '../../utils/SynapseConstants'
 import { UploadDocumentField } from '../AccessRequirementList/ManagedACTAccessRequirementRequestFlow/UploadDocumentField'
 import {
@@ -93,7 +93,7 @@ export const SetManagedAccessRequirementFields = React.forwardRef(
         return ducTemplateFileHandleAssociation
       }
       return undefined
-    }, [updatedAr.ducTemplateFileHandleId])
+    }, [updatedAr.ducTemplateFileHandleId, updatedAr.id])
 
     const uploadDucTemplateCallback = (data: UploadCallbackResp) => {
       if (data.resp && data.success) {

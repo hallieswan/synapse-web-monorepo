@@ -1,12 +1,19 @@
-import React from 'react'
-import { server } from '../../mocks/msw/server'
-import { SynapseClient } from '../..'
-import CreateAccessRequirementWizard, {
-  CreateAccessRequirementWizardProps,
-} from './CreateAccessRequirementWizard'
+import {
+  ACCESS_TYPE,
+  RestrictableObjectDescriptor,
+  RestrictableObjectType,
+  SELF_SIGN_ACCESS_REQUIREMENT_CONCRETE_TYPE_VALUE,
+  SelfSignAccessRequirement,
+} from '@sage-bionetworks/synapse-types'
 import { render, screen, waitFor, within } from '@testing-library/react'
-import { createWrapper } from '../../testutils/TestingLibraryUtils'
 import userEvent from '@testing-library/user-event'
+import React from 'react'
+import { MOCK_ACCESS_TOKEN } from '../../mocks/MockSynapseContext'
+import {
+  MOCK_FILE_ENTITY_ID,
+  MOCK_FILE_NAME,
+} from '../../mocks/entity/mockFileEntity'
+import { MOCK_MANAGED_ACCESS_REQUIREMENT_ACL } from '../../mocks/mockAccessRequirementAcls'
 import {
   MOCK_ETAG,
   MOCK_NEWLY_CREATED_AR_ID,
@@ -14,21 +21,14 @@ import {
   mockManagedACTAccessRequirement,
   mockToUAccessRequirement,
 } from '../../mocks/mockAccessRequirements'
-import {
-  ACCESS_TYPE,
-  RestrictableObjectDescriptor,
-  RestrictableObjectType,
-  SelfSignAccessRequirement,
-} from '@sage-bionetworks/synapse-types'
-import {
-  MOCK_FILE_ENTITY_ID,
-  MOCK_FILE_NAME,
-} from '../../mocks/entity/mockFileEntity'
-import { MOCK_ACCESS_TOKEN } from '../../mocks/MockSynapseContext'
-import { REMOVE_BUTTON_LABEL } from '../AccessRequirementAclEditor/ResourceAccessItem'
-import { MOCK_MANAGED_ACCESS_REQUIREMENT_ACL } from '../../mocks/mockAccessRequirementAcls'
+import { server } from '../../mocks/msw/server'
 import { MOCK_USER_NAME } from '../../mocks/user/mock_user_profile'
-import { SELF_SIGN_ACCESS_REQUIREMENT_CONCRETE_TYPE_VALUE } from '@sage-bionetworks/synapse-types'
+import SynapseClient from '../../synapse-client'
+import { createWrapper } from '../../testutils/TestingLibraryUtils'
+import { REMOVE_BUTTON_LABEL } from '../AccessRequirementAclEditor/ResourceAccessItem'
+import CreateAccessRequirementWizard, {
+  CreateAccessRequirementWizardProps,
+} from './CreateAccessRequirementWizard'
 
 const entitySubject: RestrictableObjectDescriptor = {
   id: MOCK_FILE_ENTITY_ID,

@@ -2,7 +2,6 @@ import { ErrorResponse, ObjectType } from '@sage-bionetworks/synapse-types'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { SynapseClient } from '../..'
 import { MOCK_ACCESS_TOKEN } from '../../mocks/MockSynapseContext'
 import {
   mockEntityRootWikiPage,
@@ -13,6 +12,7 @@ import {
   mockEntityWikiPageKey,
 } from '../../mocks/mockWikiPageKey'
 import { rest, server } from '../../mocks/msw/server'
+import SynapseClient from '../../synapse-client'
 import { CreateWikiPageInput } from '../../synapse-queries'
 import { createWrapper } from '../../testutils/TestingLibraryUtils'
 import { WIKI_OBJECT_TYPE, WIKI_PAGE } from '../../utils/APIConstants'

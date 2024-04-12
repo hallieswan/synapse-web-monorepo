@@ -1,12 +1,12 @@
 import { Box, Button, Typography } from '@mui/material'
-import React, { useState } from 'react'
-import { getOldAccessRequirementInstructions } from './GovernanceUtils'
 import {
   ACT_ACCESS_REQUIREMENT_CONCRETE_TYPE_VALUE,
   AccessRequirement,
   TERMS_OF_USE_ACCESS_REQUIREMENT_CONCRETE_TYPE_VALUE,
 } from '@sage-bionetworks/synapse-types'
-import { ConfirmationDialog } from '..'
+import React, { useState } from 'react'
+import ConfirmationDialog from '../ConfirmationDialog'
+import { getOldAccessRequirementInstructions } from './GovernanceUtils'
 
 type AccessRequirementTextInstructionsProps = {
   accessRequirement: AccessRequirement
