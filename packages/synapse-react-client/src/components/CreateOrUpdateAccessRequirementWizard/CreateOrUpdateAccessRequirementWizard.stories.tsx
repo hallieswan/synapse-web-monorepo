@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from '@storybook/react'
 import { fn } from '@storybook/test'
-import CreateAccessRequirementWizard from './CreateAccessRequirementWizard'
+import CreateOrUpdateAccessRequirementWizard from './CreateOrUpdateAccessRequirementWizard'
 import { RestrictableObjectType } from '@sage-bionetworks/synapse-types'
 import {
   mockACTAccessRequirement,
@@ -10,8 +10,8 @@ import {
 } from '../../mocks/mockAccessRequirements'
 
 const meta = {
-  title: 'Governance/CreateAccessRequirementWizard',
-  component: CreateAccessRequirementWizard,
+  title: 'Governance/CreateOrUpdateAccessRequirementWizard',
+  component: CreateOrUpdateAccessRequirementWizard,
   parameters: {
     stack: 'development',
   },

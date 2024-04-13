@@ -22,12 +22,12 @@ import SetManagedAccessRequirementFields, {
   SetManagedAccessRequirementFieldsHandle,
 } from '../SetManagedAccessRequirementFields'
 import {
-  CreateAccessRequirementWizardStep,
+  CreateOrUpdateAccessRequirementWizardStep,
   getModalTitle,
   isLastStep,
-} from './CreateAccessRequirementWizardUtils'
+} from './CreateOrUpdateAccessRequirementWizardUtils'
 
-export type CreateAccessRequirementWizardProps = {
+export type CreateOrUpdateAccessRequirementWizardProps = {
   open: boolean
   onCancel: () => void
   onComplete: () => void
@@ -36,12 +36,12 @@ export type CreateAccessRequirementWizardProps = {
   'subject' | 'accessRequirementId'
 >
 
-export const CreateAccessRequirementWizard: React.FunctionComponent<
-  CreateAccessRequirementWizardProps
-> = (props: CreateAccessRequirementWizardProps) => {
+export const CreateOrUpdateAccessRequirementWizard: React.FunctionComponent<
+  CreateOrUpdateAccessRequirementWizardProps
+> = (props: CreateOrUpdateAccessRequirementWizardProps) => {
   const { open, onCancel, onComplete } = props
 
-  const [step, setStep] = useState<CreateAccessRequirementWizardStep>(
+  const [step, setStep] = useState<CreateOrUpdateAccessRequirementWizardStep>(
     'SET_AR_COMMON_FIELDS',
   )
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -68,7 +68,7 @@ export const CreateAccessRequirementWizard: React.FunctionComponent<
             onSaveComplete={accessRequirement => {
               if (accessRequirement) {
                 setAccessRequirement(accessRequirement)
-                const nextStep: CreateAccessRequirementWizardStep =
+                const nextStep: CreateOrUpdateAccessRequirementWizardStep =
                   accessRequirement.concreteType ===
                   MANAGED_ACT_ACCESS_REQUIREMENT_CONCRETE_TYPE_VALUE
                     ? 'SET_MANAGED_AR_FIELDS'
@@ -166,4 +166,4 @@ export const CreateAccessRequirementWizard: React.FunctionComponent<
   )
 }
 
-export default CreateAccessRequirementWizard
+export default CreateOrUpdateAccessRequirementWizard

@@ -26,9 +26,9 @@ import { MOCK_USER_NAME } from '../../mocks/user/mock_user_profile'
 import SynapseClient from '../../synapse-client'
 import { createWrapper } from '../../testutils/TestingLibraryUtils'
 import { REMOVE_BUTTON_LABEL } from '../AccessRequirementAclEditor/ResourceAccessItem'
-import CreateAccessRequirementWizard, {
-  CreateAccessRequirementWizardProps,
-} from './CreateAccessRequirementWizard'
+import CreateOrUpdateAccessRequirementWizard, {
+  CreateOrUpdateAccessRequirementWizardProps,
+} from './CreateOrUpdateAccessRequirementWizard'
 
 const entitySubject: RestrictableObjectDescriptor = {
   id: MOCK_FILE_ENTITY_ID,
@@ -51,14 +51,17 @@ const updateAccessRequirementAclSpy = jest.spyOn(
   'updateAccessRequirementAcl',
 )
 
-function renderComponent(props: CreateAccessRequirementWizardProps) {
-  const component = render(<CreateAccessRequirementWizard {...props} />, {
-    wrapper: createWrapper(),
-  })
+function renderComponent(props: CreateOrUpdateAccessRequirementWizardProps) {
+  const component = render(
+    <CreateOrUpdateAccessRequirementWizard {...props} />,
+    {
+      wrapper: createWrapper(),
+    },
+  )
   return { component }
 }
 
-function setUp(props: CreateAccessRequirementWizardProps) {
+function setUp(props: CreateOrUpdateAccessRequirementWizardProps) {
   const user = userEvent.setup()
   const { component } = renderComponent(props)
 
@@ -87,7 +90,7 @@ function getBtn(name: string) {
   return screen.getByRole('button', { name: name })
 }
 
-describe('CreateAccessRequirementWizard', () => {
+describe('CreateOrUpdateAccessRequirementWizard', () => {
   beforeEach(() => jest.clearAllMocks())
   beforeAll(() => server.listen())
   afterEach(() => server.restoreHandlers())

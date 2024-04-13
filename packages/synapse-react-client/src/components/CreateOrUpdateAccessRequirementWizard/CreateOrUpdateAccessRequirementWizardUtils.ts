@@ -1,11 +1,11 @@
-export type CreateAccessRequirementWizardStep =
+export type CreateOrUpdateAccessRequirementWizardStep =
   | 'SET_AR_COMMON_FIELDS'
   | 'SET_MANAGED_AR_FIELDS'
   | 'SET_MANAGED_AR_ACL_PERMISSIONS'
   | 'SET_BASIC_AR_FIELDS'
 
 export function getModalTitle(
-  step: CreateAccessRequirementWizardStep,
+  step: CreateOrUpdateAccessRequirementWizardStep,
   isEditing: boolean,
 ): string {
   switch (step) {
@@ -18,7 +18,9 @@ export function getModalTitle(
   }
 }
 
-export function isLastStep(step: CreateAccessRequirementWizardStep): boolean {
+export function isLastStep(
+  step: CreateOrUpdateAccessRequirementWizardStep,
+): boolean {
   switch (step) {
     case 'SET_MANAGED_AR_ACL_PERMISSIONS':
     case 'SET_BASIC_AR_FIELDS':
