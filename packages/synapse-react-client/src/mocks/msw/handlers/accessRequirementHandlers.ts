@@ -79,7 +79,6 @@ export function createAccessRequirement(backendOrigin: string) {
   return rest.post(
     `${backendOrigin}${ACCESS_REQUIREMENT}`,
     async (req, res, ctx) => {
-      // TODO - confirm this status code
       const requestBody: AccessRequirement = await req.json()
       return res(
         ctx.status(201),
@@ -97,7 +96,6 @@ export function updateAccessRequirement(backendOrigin: string) {
   return rest.put(
     `${backendOrigin}${ACCESS_REQUIREMENT_BY_ID(':id')}`,
     async (req, res, ctx) => {
-      // TODO - confirm this status code
       const requestBody: AccessRequirement = await req.json()
       return res(ctx.status(200), ctx.json(requestBody))
     },

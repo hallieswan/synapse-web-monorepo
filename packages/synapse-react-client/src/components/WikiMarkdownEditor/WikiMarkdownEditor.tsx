@@ -30,14 +30,14 @@ export type WikiMarkdownEditorProps = {
   wikiPageId?: string
   onCancel?: () => void
   onSave?: () => void
-  // TODO - implement delete functionality exposed in SWC's WikiMarkdownEditor
+  // TODO: SWC-6774 - expose delete prop
   // showDeleteButton: boolean
 }
 
 export const WikiMarkdownEditor: React.FunctionComponent<
   WikiMarkdownEditorProps
 > = (props: WikiMarkdownEditorProps) => {
-  // TODO - implement delete functionality, then get showDeleteButton from props
+  // TODO: SWC-6774 - get showDeleteButton from props
   const showDeleteButton = false
   const {
     ownerObjectType,
@@ -233,7 +233,7 @@ export const WikiMarkdownEditor: React.FunctionComponent<
               color="error"
               disabled={areButtonsDisabled}
               onClick={() => {
-                // TODO - implement delete functionality
+                // TODO: SWC-6774 - implement delete functionality
               }}
             >
               Delete Page
